@@ -917,6 +917,10 @@ function bindEvents() {
   };
 
   $('productQuantity').addEventListener('input', updateQuantitySubtotal);
+
+   $('productQuantity').addEventListener('focus', (event) => {
+  event.target.select();
+});
    $('productQuantity').addEventListener('blur', () => {
   const input = $('productQuantity');
 
