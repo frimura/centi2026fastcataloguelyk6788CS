@@ -777,9 +777,10 @@ function orderText() {
 }
 
 async function sendOrder() {
-  const order = orderText();
-  const url = (settings.scriptUrl || '').trim();
-  const pin = (settings.pin || '').trim();
+ const order = orderText();
+const url = (settings.scriptUrl || '').trim();
+const pin = (settings.pin || '').trim();
+const listenerId = $('listenerDestination').value;
 
   if (!url) {
     openSettings();
@@ -793,6 +794,11 @@ async function sendOrder() {
     return;
   }
 
+   if (!listenerId) {
+  showToast('Please select a destination PC');
+  return;
+}
+
   if (order.text.length > 1500) {
     showToast('Order is too long for the secure bot request. Copy it instead.');
     return;
@@ -804,10 +810,11 @@ async function sendOrder() {
 
   try {
     const query = new URLSearchParams({
-      action: 'order',
-      pin,
-      payload: JSON.stringify(order)
-    });
+  action: 'order',
+  pin,
+  listenerId,
+  payload: JSON.stringify(order)
+});
 
     const result = await jsonp(url + '?' + query.toString(), 30000);
 
