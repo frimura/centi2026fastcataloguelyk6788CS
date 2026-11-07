@@ -27,7 +27,7 @@ let toastTimer;
 let searchTimer;
 let refreshTimer = null;
 let catalogRequest = null;
-
+let selectedProduct = null;
 
 /* =========================================================
    2. STORAGE HELPERS
@@ -476,8 +476,91 @@ function renderProducts() {
   }
 
   host.querySelectorAll('[data-add]').forEach(button => {
-    button.addEventListener('click', () => addToCart(button.dataset.add));
+  button.addEventListener('click', () => {
+    openQuantitySelector(button.dataset.add);
   });
+});
+}
+
+
+/* =========================================================
+   PRODUCT QUANTITY SELECTOR
+   ========================================================= */
+
+function openQuantitySelector(sku) {
+  const product = products.find(item => item.sku === sku);
+  if (!product) return;
+
+  selectedProduct = product;
+
+  $('quantityProductName').textContent =
+    product.short || product.name || product.sku;
+
+  $('quantityProductSku').textContent = `SKU: ${product.sku}`;
+
+  $('quantityProductPrice').textContent = money(product.price);
+
+  $('productQuantity').value = 1;
+
+  const image = $('quantityImage');
+  const placeholder = $('quantityImagePlaceholder');
+
+  if (product.image) {
+    image.src = product.image;
+    image.alt = product.short || product.name || product.sku;
+    image.classList.remove('hidden');
+    placeholder.classList.add('hidden');
+
+    image.onerror = () => {
+      image.classList.add('hidden');
+      placeholder.classList.remove('hidden');
+    };
+  } else {
+    image.removeAttribute('src');
+    image.classList.add('hidden');
+    placeholder.classList.remove('hidden');
+  }
+
+  updateQuantitySubtotal();
+
+  $('quantityOverlay').classList.remove('hidden');
+  $('quantityPanel').classList.remove('hidden');
+}
+
+function closeQuantitySelector() {
+  $('quantityOverlay').classList.add('hidden');
+  $('quantityPanel').classList.add('hidden');
+  selectedProduct = null;
+}
+
+function updateQuantitySubtotal() {
+  if (!selectedProduct) return;
+
+  const quantity = Math.max(
+    1,
+    Math.floor(Number($('productQuantity').value) || 1)
+  );
+
+  $('productQuantity').value = quantity;
+
+  $('quantitySubtotal').textContent =
+    money(selectedProduct.price * quantity);
+}
+
+function confirmAddToCart() {
+  if (!selectedProduct) return;
+
+  const quantity = Math.max(
+    1,
+    Math.floor(Number($('productQuantity').value) || 1)
+  );
+
+  const sku = selectedProduct.sku;
+
+  addToCart(sku, quantity);
+  closeQuantitySelector();
+
+  showToast(`Added ${quantity} × ${sku} to cart`);
 }
 
 
@@ -485,9 +568,12 @@ function renderProducts() {
    9. SHOPPING CART
    ========================================================= */
 
-function addToCart(sku) {
+
+function addToCart(sku, quantity = 1) {
   const product = products.find(item => item.sku === sku);
   if (!product) return;
+
+  quantity = Math.max(1, Math.floor(Number(quantity) || 1));
 
   cart[sku] ??= {
     sku: product.sku,
@@ -497,13 +583,12 @@ function addToCart(sku) {
     qty: 0
   };
 
-  // Keep the image updated if the product is added again.
   cart[sku].image = product.image || cart[sku].image || '';
-  cart[sku].qty++;
+  cart[sku].qty += quantity;
 
   saveCart();
-  showToast('Added to cart');
 }
+
 
 function saveCart() {
   writeStorage(CONFIG.cartKey, cart);
@@ -808,6 +893,26 @@ function bindEvents() {
   };
 
   $('refreshBtn').onclick = () => loadCatalog();
+   
+  // Quantity selector controls
+  $('closeQuantity').onclick = closeQuantitySelector;
+  $('quantityOverlay').onclick = closeQuantitySelector;
+
+  $('quantityMinus').onclick = () => {
+    const input = $('productQuantity');
+    input.value = Math.max(1, Number(input.value || 1) - 1);
+    updateQuantitySubtotal();
+  };
+
+  $('quantityPlus').onclick = () => {
+    const input = $('productQuantity');
+    input.value = Math.max(1, Number(input.value || 1) + 1);
+    updateQuantitySubtotal();
+  };
+
+  $('productQuantity').addEventListener('input', updateQuantitySubtotal);
+
+  $('confirmAddToCart').onclick = confirmAddToCart;
 
   $('cartTop').onclick = openCart;
   $('navCart').onclick = openCart;
