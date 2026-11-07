@@ -840,3 +840,133 @@ main {
     max-height: 52px;
   }
 }
+
+/* =========================================================
+   PRODUCT QUANTITY SELECTOR
+   ========================================================= */
+
+.quantity-panel {
+  position: fixed;
+  top: 50%;
+  left: 50%;
+  z-index: 12;
+
+  width: min(calc(100% - 28px), 420px);
+  overflow: hidden;
+
+  border-radius: 16px;
+  background: var(--white);
+  box-shadow: var(--shadow);
+
+  transform: translate(-50%, -50%);
+}
+
+.quantity-product {
+  padding: 16px;
+  display: flex;
+  align-items: center;
+  gap: 13px;
+}
+
+.quantity-image,
+.quantity-image-placeholder {
+  width: 76px;
+  height: 76px;
+  flex: 0 0 76px;
+
+  border-radius: 10px;
+  background: #f3f4f6;
+  object-fit: contain;
+}
+
+.quantity-image-placeholder {
+  display: grid;
+  place-items: center;
+  color: #9ca3af;
+  font-size: 25px;
+}
+
+.quantity-product-info {
+  min-width: 0;
+}
+
+.quantity-product-info strong {
+  display: block;
+  font-size: 14px;
+  overflow-wrap: anywhere;
+}
+
+.quantity-product-info small {
+  display: block;
+  margin-top: 4px;
+  color: var(--muted);
+  font-size: 11px;
+  overflow-wrap: anywhere;
+}
+
+.quantity-product-info .product-price {
+  margin: 6px 0 0;
+  font-size: 15px;
+}
+
+.quantity-body {
+  padding: 0 17px 18px;
+}
+
+.quantity-body > label {
+  display: block;
+  margin-bottom: 9px;
+  font-size: 13px;
+  font-weight: 700;
+}
+
+.quantity-picker {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 18px;
+}
+
+.quantity-picker button {
+  width: 43px;
+  height: 43px;
+
+  border: 1px solid var(--line);
+  border-radius: 10px;
+  background: var(--white);
+
+  font-size: 23px;
+}
+
+.quantity-picker input {
+  width: 90px;
+  height: 43px;
+
+  border: 1px solid var(--line);
+  border-radius: 10px;
+
+  text-align: center;
+  font-size: 19px;
+  font-weight: 750;
+}
+
+.quantity-subtotal {
+  margin: 18px 0 14px;
+  padding-top: 13px;
+
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+
+  border-top: 1px solid var(--line);
+}
+
+.quantity-subtotal span {
+  color: var(--muted);
+  font-size: 13px;
+}
+
+.quantity-subtotal strong {
+  font-size: 19px;
+}
+
