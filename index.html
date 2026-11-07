@@ -58,8 +58,11 @@
 
       <div class="quantity-picker">
         <button id="quantityMinus" type="button">−</button>
-        <input id="productQuantity" type="number"
-               min="1" step="1" value="1" inputmode="numeric">
+       <input id="productQuantity" type="text"
+       value="1"
+       inputmode="numeric"
+       pattern="[0-9]*"
+       autocomplete="off">
         <button id="quantityPlus" type="button">＋</button>
       </div>
 
