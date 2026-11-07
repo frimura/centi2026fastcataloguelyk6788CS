@@ -683,8 +683,9 @@ function renderCart() {
   );
 
   $('sendOrder').disabled = !items.length;
-  $('copyOrder').disabled = !items.length;
-  $('emptyCart').disabled = !items.length;
+$('sendToPC').disabled = !items.length;
+$('copyOrder').disabled = !items.length;
+$('emptyCart').disabled = !items.length;
 
   $('cartItems').querySelectorAll('[data-minus]').forEach(button => {
     button.onclick = () => changeQty(button.dataset.minus, -1);
@@ -776,11 +777,11 @@ function orderText() {
   };
 }
 
+
 async function sendOrder() {
- const order = orderText();
-const url = (settings.scriptUrl || '').trim();
-const pin = (settings.pin || '').trim();
-const listenerId = $('listenerDestination').value;
+  const order = orderText();
+  const url = (settings.scriptUrl || '').trim();
+  const pin = (settings.pin || '').trim();
 
   if (!url) {
     openSettings();
@@ -794,11 +795,6 @@ const listenerId = $('listenerDestination').value;
     return;
   }
 
-   if (!listenerId) {
-  showToast('Please select a destination PC');
-  return;
-}
-
   if (order.text.length > 1500) {
     showToast('Order is too long for the secure bot request. Copy it instead.');
     return;
@@ -810,11 +806,10 @@ const listenerId = $('listenerDestination').value;
 
   try {
     const query = new URLSearchParams({
-  action: 'order',
-  pin,
-  listenerId,
-  payload: JSON.stringify(order)
-});
+      action: 'order',
+      pin,
+      payload: JSON.stringify(order)
+    });
 
     const result = await jsonp(url + '?' + query.toString(), 30000);
 
@@ -837,6 +832,68 @@ const listenerId = $('listenerDestination').value;
     button.textContent = 'Send order to Telegram';
   }
 }
+
+
+async function sendToPC() {
+  const order = orderText();
+  const url = (settings.scriptUrl || '').trim();
+  const pin = (settings.pin || '').trim();
+  const listenerId = $('listenerDestination').value;
+
+  if (!url) {
+    openSettings();
+    showToast('Set your Apps Script URL first');
+    return;
+  }
+
+  if (!pin) {
+    openSettings();
+    showToast('Enter the order access PIN');
+    return;
+  }
+
+  if (!listenerId) {
+    showToast('Please select a destination PC');
+    return;
+  }
+
+  if (order.text.length > 1500) {
+    showToast('Order is too long. Copy it instead.');
+    return;
+  }
+
+  const button = $('sendToPC');
+  button.disabled = true;
+  button.textContent = 'Sending to PC…';
+
+  try {
+    const query = new URLSearchParams({
+      action: 'route',
+      pin,
+      listenerId,
+      payload: JSON.stringify(order)
+    });
+
+    const result = await jsonp(url + '?' + query.toString(), 30000);
+
+    if (!result.ok) {
+      throw new Error(result.error || 'PC routing failed');
+    }
+
+    showToast(`Order sent to ${result.deviceName}`);
+
+    cart = {};
+    saveCart();
+    closeCart();
+
+  } catch (error) {
+    showToast(`PC routing failed: ${error.message}`);
+  } finally {
+    button.disabled = false;
+    button.textContent = 'Send order to PC';
+  }
+}
+
 
 async function copyOrder() {
   try {
@@ -953,6 +1010,7 @@ function bindEvents() {
   $('cartOverlay').onclick = closeCart;
 
 $('sendOrder').onclick = sendOrder;
+$('sendToPC').onclick = sendToPC;
 $('copyOrder').onclick = copyOrder;
 $('emptyCart').onclick = emptyCart;
 
