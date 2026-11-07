@@ -26,6 +26,54 @@
     <section id="productList" class="product-list" aria-live="polite"></section>
     <div id="emptyState" class="empty hidden"><div class="empty-icon">⌕</div><strong>No products found</strong><span>Try another SKU or product name.</span></div>
   </main>
+
+  
+  <!-- PRODUCT QUANTITY SELECTOR -->
+  <div id="quantityOverlay" class="overlay hidden"></div>
+
+  <section id="quantityPanel" class="quantity-panel hidden"
+           role="dialog" aria-modal="true"
+           aria-labelledby="quantityProductName">
+
+    <div class="panel-head">
+      <strong>Select quantity</strong>
+      <button id="closeQuantity" class="icon-button"
+              aria-label="Close">×</button>
+    </div>
+
+    <div class="quantity-product">
+      <img id="quantityImage" class="quantity-image hidden" alt="">
+      <div id="quantityImagePlaceholder"
+           class="quantity-image-placeholder">▧</div>
+
+      <div class="quantity-product-info">
+        <strong id="quantityProductName"></strong>
+        <small id="quantityProductSku"></small>
+        <div id="quantityProductPrice" class="product-price"></div>
+      </div>
+    </div>
+
+    <div class="quantity-body">
+      <label for="productQuantity">Quantity</label>
+
+      <div class="quantity-picker">
+        <button id="quantityMinus" type="button">−</button>
+        <input id="productQuantity" type="number"
+               min="1" step="1" value="1" inputmode="numeric">
+        <button id="quantityPlus" type="button">＋</button>
+      </div>
+
+      <div class="quantity-subtotal">
+        <span>Subtotal</span>
+        <strong id="quantitySubtotal">Rp0</strong>
+      </div>
+
+      <button id="confirmAddToCart" class="primary-button">
+        Add to Cart
+      </button>
+    </div>
+  </section>
+
   <nav class="bottom-nav">
     <button class="nav-active" id="navCatalog"><span>▦</span>Catalog</button>
     <button id="navCart"><span>🛒</span>Cart <b id="navCartCount">0</b></button>
