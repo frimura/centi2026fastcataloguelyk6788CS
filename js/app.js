@@ -12,6 +12,7 @@ const CONFIG = {
   cacheKey: 'centi_catalog_rows_v1',
   cartKey: 'centi_catalog_cart_v1',
   settingsKey: 'centi_catalog_settings_v1',
+   identityKey: 'centi_catalog_requester_v1',
   refreshInterval: 5 * 60 * 1000
 };
 
@@ -28,6 +29,7 @@ let searchTimer;
 let refreshTimer = null;
 let catalogRequest = null;
 let selectedProduct = null;
+let requesterName = readStorage(CONFIG.identityKey, '');
 
 /* =========================================================
    2. STORAGE HELPERS
@@ -50,7 +52,101 @@ function writeStorage(key, value) {
     console.warn(`Could not save storage "${key}".`, error);
   }
 }
+/* =========================================================
+   REQUESTER IDENTITY
+   ========================================================= */
 
+const REQUESTER_NAMES = [
+  'Ye', 'Amin', 'Lukman', 'Resti', 'Bangkit', 'Arif',
+  'Raga', 'Rauf', 'Budi', 'Frisky', 'Yudi', 'Serli'
+];
+
+function showRequesterPrompt() {
+  let overlay = $('requesterIdentityOverlay');
+
+  if (!overlay) {
+    overlay = document.createElement('div');
+    overlay.id = 'requesterIdentityOverlay';
+
+    overlay.style.cssText = `
+      position:fixed;inset:0;z-index:999999;
+      display:none;align-items:center;justify-content:center;
+      padding:20px;background:rgba(0,0,0,.72);
+      font-family:Arial,sans-serif;
+    `;
+
+    overlay.innerHTML = `
+      <section style="
+        width:min(420px,100%);max-height:85vh;overflow:auto;
+        padding:22px;background:#fff;color:#222;border-radius:14px;
+        box-sizing:border-box
+      ">
+        <h2>Siapa yang menggunakan perangkat ini?</h2>
+        <p>Pilih nama Anda sebelum membuat pesanan.</p>
+
+        <div style="
+          display:grid;
+          grid-template-columns:repeat(2,minmax(0,1fr));
+          gap:9px;
+        ">
+          ${REQUESTER_NAMES.map(name => `
+            <button type="button" data-requester="${esc(name)}"
+              style="padding:12px;border:1px solid #ccc;
+              border-radius:8px;background:#f7f7f7;
+              color:#222;cursor:pointer">
+              ${esc(name)}
+            </button>
+          `).join('')}
+        </div>
+      </section>
+    `;
+
+    document.body.appendChild(overlay);
+
+    overlay.querySelectorAll('[data-requester]').forEach(button => {
+      button.addEventListener('click', () => {
+        requesterName = button.dataset.requester;
+
+        writeStorage(CONFIG.identityKey, requesterName);
+
+        overlay.style.display = 'none';
+        updateRequesterBadge();
+      });
+    });
+  }
+
+  overlay.style.display = 'flex';
+}
+
+function updateRequesterBadge() {
+  let badge = $('requesterIdentityBadge');
+
+  if (!badge) {
+    badge = document.createElement('button');
+    badge.id = 'requesterIdentityBadge';
+    badge.type = 'button';
+
+    badge.style.cssText = `
+      position:fixed;right:14px;bottom:14px;z-index:99990;
+      padding:9px 13px;border:1px solid #999;
+      border-radius:999px;background:#222;color:#fff;
+      font:600 12px Arial,sans-serif;cursor:pointer;
+    `;
+
+    badge.addEventListener('click', showRequesterPrompt);
+    document.body.appendChild(badge);
+  }
+
+  badge.textContent = `User: ${requesterName || 'Select name'} · Change`;
+}
+
+function ensureRequesterIdentity() {
+  updateRequesterBadge();
+
+  if (!REQUESTER_NAMES.includes(requesterName)) {
+    showRequesterPrompt();
+  }
+}
 
 /* =========================================================
    3. GENERAL HELPERS
@@ -773,7 +869,8 @@ function orderText() {
     `New Order: ${id}`,
     '---------------------------------',
     'Pelanggan: Catalog Order',
-    'No : Mobile Catalog',
+`Requested by: ${requesterName || 'Unknown'}`,
+'No : Mobile Catalog',
     '',
     'Pesanan :'
   ];
@@ -793,12 +890,19 @@ function orderText() {
     id,
     text: lines.join('\n'),
     items,
-    total
+    total,
+    requesterName
   };
 }
 
 
-async function sendOrder() {
+async function sendOrder() 
+{
+     if (!REQUESTER_NAMES.includes(requesterName)) {
+    showRequesterPrompt();
+    showToast('Select your name before sending an order');
+    return;
+  }
   const order = orderText();
      if (!confirm(
     'CONFIRM TELEGRAM ORDER\n\n' +
@@ -862,6 +966,11 @@ async function sendOrder() {
 
 
 async function sendToPC() {
+     if (!REQUESTER_NAMES.includes(requesterName)) {
+    showRequesterPrompt();
+    showToast('Select your name before sending an order');
+    return;
+  }
   const order = orderText();
   const url = (settings.scriptUrl || '').trim();
   const pin = (settings.pin || '').trim();
@@ -1079,6 +1188,7 @@ $('emptyCart').onclick = emptyCart;
 
 function initializeApp() {
   bindEvents();
+  ensureRequesterIdentity();
 
   updateCartBadge();
   renderCart();
