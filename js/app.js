@@ -536,12 +536,18 @@ function closeQuantitySelector() {
 function updateQuantitySubtotal() {
   if (!selectedProduct) return;
 
-  const quantity = Math.max(
-    1,
-    Math.floor(Number($('productQuantity').value) || 1)
-  );
+  const rawValue = $('productQuantity').value;
 
-  $('productQuantity').value = quantity;
+  // Allow an empty field while the user is typing
+  if (rawValue === '') {
+    $('quantitySubtotal').textContent = money(0);
+    return;
+  }
+
+  const quantity = Math.max(
+    0,
+    Math.floor(Number(rawValue) || 0)
+  );
 
   $('quantitySubtotal').textContent =
     money(selectedProduct.price * quantity);
@@ -911,6 +917,16 @@ function bindEvents() {
   };
 
   $('productQuantity').addEventListener('input', updateQuantitySubtotal);
+   $('productQuantity').addEventListener('blur', () => {
+  const input = $('productQuantity');
+
+  input.value = Math.max(
+    1,
+    Math.floor(Number(input.value) || 1)
+  );
+
+  updateQuantitySubtotal();
+});
 
   $('confirmAddToCart').onclick = confirmAddToCart;
 
