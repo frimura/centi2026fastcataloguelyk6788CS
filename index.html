@@ -87,8 +87,25 @@
     <div class="panel-head"><div><strong>Your order</strong><small id="cartSubtitle">0 different products</small></div><button id="closeCart" class="icon-button" aria-label="Close cart">×</button></div>
     <div id="cartItems" class="cart-items"></div>
     <div class="cart-footer">
-      <div class="total-line"><span>Total</span><strong id="cartTotal">Rp0</strong></div>
-      <button id="sendOrder" class="primary-button">Send order to Telegram</button>
+    <div class="total-line">
+  <span>Total</span>
+  <strong id="cartTotal">Rp0</strong>
+</div>
+
+<label for="listenerDestination" class="destination-label">
+  Send order to
+</label>
+
+<select id="listenerDestination" class="destination-select">
+  <option value="">Select destination PC</option>
+  <option value="CENTI-PC">PC DEPAN</option>
+  <option value="CENTI-CS-1">BUDI</option>
+  <option value="CENTI-CS-2">RAUF</option>
+</select>
+
+<button id="sendOrder" class="primary-button">
+  Send order to Telegram
+</button>
 <button id="copyOrder" class="secondary-button">Copy order text</button>
 <button id="emptyCart" class="empty-cart-button">Empty cart</button>
       <p class="footnote">Orders are sent to your configured Telegram chat through your Apps Script endpoint.</p>
