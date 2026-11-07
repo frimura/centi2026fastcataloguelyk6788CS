@@ -683,7 +683,7 @@ function renderCart() {
   );
 
   $('sendOrder').disabled = !items.length;
-$('sendToPC').disabled = !items.length;
+updatePCButton();
 $('copyOrder').disabled = !items.length;
 $('emptyCart').disabled = !items.length;
 
@@ -737,6 +737,26 @@ function emptyCart() {
 /* =========================================================
    10. ORDER GENERATION AND TELEGRAM
    ========================================================= */
+function getListenerName(listenerId) {
+  const names = {
+    'CENTI-PC': 'PC DEPAN',
+    'CENTI-CS-1': 'BUDI',
+    'CENTI-CS-2': 'RAUF'
+  };
+
+  return names[listenerId] || 'Unknown PC';
+}
+
+function updatePCButton() {
+  const listenerId = $('listenerDestination').value;
+  const button = $('sendToPC');
+
+  button.textContent = listenerId
+    ? `Send to ${getListenerName(listenerId)}`
+    : 'Select a PC first';
+
+  button.disabled = !listenerId || !cartValues().length;
+}
 
 function orderText() {
   const items = cartValues();
@@ -780,6 +800,13 @@ function orderText() {
 
 async function sendOrder() {
   const order = orderText();
+     if (!confirm(
+    'CONFIRM TELEGRAM ORDER\n\n' +
+    'Destination: TELEGRAM\n\n' +
+    'Are you sure you want to send this order?'
+  )) {
+    return;
+  }
   const url = (settings.scriptUrl || '').trim();
   const pin = (settings.pin || '').trim();
 
@@ -857,6 +884,17 @@ async function sendToPC() {
     return;
   }
 
+     const destinationName = getListenerName(listenerId);
+
+  if (!confirm(
+    'CONFIRM PC ORDER\n\n' +
+    'Destination: ' + destinationName + '\n' +
+    'Listener ID: ' + listenerId + '\n\n' +
+    'Are you sure you want to send this order?'
+  )) {
+    return;
+  }
+
   if (order.text.length > 1500) {
     showToast('Order is too long. Copy it instead.');
     return;
@@ -890,7 +928,7 @@ async function sendToPC() {
     showToast(`PC routing failed: ${error.message}`);
   } finally {
     button.disabled = false;
-    button.textContent = 'Send order to PC';
+   updatePCButton();
   }
 }
 
@@ -1011,6 +1049,10 @@ function bindEvents() {
 
 $('sendOrder').onclick = sendOrder;
 $('sendToPC').onclick = sendToPC;
+
+$('listenerDestination').addEventListener('change', updatePCButton);
+
+updatePCButton();
 $('copyOrder').onclick = copyOrder;
 $('emptyCart').onclick = emptyCart;
 
