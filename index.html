@@ -11,12 +11,37 @@
   <title>Centi Catalog</title>
 </head>
 <body>
-  <header class="topbar">
-    <div class="brand">
-  <img src="assets/centi-logo.png" alt="Centi Store" class="brand-logo">
-</div>
-    <button id="cartTop" class="cart-top" aria-label="Open cart">Cart <span id="cartCount">0</span></button>
-  </header>
+ <header class="topbar">
+  <div class="brand">
+    <img src="assets/centi-logo.png" alt="Centi Store" class="brand-logo">
+  </div>
+
+  <div class="header-actions">
+    <button id="requesterIdentityBadge" class="user-header">
+      User: Select name
+    </button>
+
+    <button id="cartTop" class="cart-top" aria-label="Open cart">
+      Cart <span id="cartCount">0</span>
+    </button>
+
+    <div class="header-menu">
+      <button
+        id="headerMenuButton"
+        class="header-menu-button"
+        aria-label="More options"
+        aria-expanded="false"
+        type="button"
+      >⋮</button>
+
+      <div id="headerMenu" class="header-menu-dropdown hidden">
+        <button id="settingsButton" type="button">
+          ⚙ Connection settings
+        </button>
+      </div>
+    </div>
+  </div>
+</header>
   <main>
     <section class="search-area">
       <label class="searchbox"><span>⌕</span><input id="searchInput" type="search" placeholder="Search SKU or product name…" autocomplete="off"><button id="clearSearch" aria-label="Clear search">×</button></label>
@@ -124,7 +149,7 @@
     <button id="saveSettings" class="primary-button">Save settings</button>
     <p class="footnote">The catalog is public. The PIN is used only to protect Telegram order submission. Do not put your Telegram bot token in this website.</p>
   </section>
-  <button id="settingsButton" class="settings-fab" aria-label="Settings">⚙</button>
+  
   <div id="toast" class="toast" role="status"></div>
   <script src="js/search.js"></script>
   <script src="js/app.js"></script>
