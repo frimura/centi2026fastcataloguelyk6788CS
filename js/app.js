@@ -979,9 +979,18 @@ async function sendToPC() {
     return;
   }
   const order = orderText();
-  const url = (settings.scriptUrl || '').trim();
-  const pin = (settings.pin || '').trim();
-  const listenerId = $('listenerDestination').value;
+const customerType = $('customerType').value;
+
+if (!customerType) {
+  showToast('Please select a customer type');
+  return;
+}
+
+order.customerType = customerType;
+
+const url = (settings.scriptUrl || '').trim();
+const pin = (settings.pin || '').trim();
+const listenerId = $('listenerDestination').value;
 
   if (!url) {
     openSettings();
