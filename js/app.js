@@ -15,7 +15,219 @@ const CONFIG = {
    identityKey: 'centi_catalog_requester_v1',
   refreshInterval: 5 * 60 * 1000
 };
+/* =========================================================
+   LANGUAGE CONFIGURATION
+   ========================================================= */
 
+const LANGUAGE_KEY = 'centi_catalog_language_v1';
+
+let currentLanguage =
+  localStorage.getItem(LANGUAGE_KEY) === 'id' ? 'id' : 'en';
+
+const LANG = {
+  en: {
+    connectionSettings: '⚙ Connection settings',
+    language: 'Language / Bahasa',
+    searchPlaceholder: 'Search SKU or product name…',
+    loadingCatalog: 'Loading catalog…',
+    connectingCatalog: 'Connecting to product catalog…',
+    noProducts: 'No products found',
+    tryAnother: 'Try another SKU or product name.',
+    refresh: '↻ Refresh',
+    selectQuantity: 'Select quantity',
+    quantity: 'Quantity',
+    subtotal: 'Subtotal',
+    addToCart: 'Add to Cart',
+    catalog: 'Catalog',
+    cart: 'Cart',
+    yourOrder: 'Your order',
+    differentProducts: 'different products',
+    total: 'Total',
+    destinationPC: 'Destination PC',
+    selectPC: 'Select PC',
+    customerType: 'Customer type',
+    selectCustomer: 'Select customer',
+    sendToPC: 'Send to PC',
+    selectPCFirst: 'Select a PC first',
+    sendTelegram: 'Send to Telegram',
+    copyOrder: 'Copy order text',
+    emptyCart: 'Empty cart',
+    remove: 'Remove',
+    emptyCartTitle: 'Your cart is empty',
+    emptyCartText: 'Add products from the catalog.',
+    saveSettings: 'Save settings',
+    appsScriptURL: 'Apps Script Web App URL',
+    orderPIN: 'Order access PIN',
+    userSelect: 'Select name',
+    changeUser: 'Change user',
+    requesterTitle: 'Who is using this device?',
+    requesterPrompt: 'Select your name before creating an order.',
+    added: 'Added',
+    toCart: 'to cart',
+    cartEmptied: 'Cart emptied',
+    confirmEmpty: 'Are you sure you want to remove all products from your cart?',
+    selectName: 'Select your name before sending an order',
+    selectCustomerFirst: 'Please select a customer type',
+    selectDestination: 'Please select a destination PC',
+    setURL: 'Set your Apps Script URL first',
+    enterPIN: 'Enter the order access PIN',
+    orderTooLong: 'Order is too long. Copy it instead.',
+    telegramTooLong: 'Order is too long for the secure bot request. Copy it instead.',
+    confirmTelegram: 'CONFIRM TELEGRAM ORDER',
+    confirmPC: 'CONFIRM PC ORDER',
+    destination: 'Destination',
+    listenerID: 'Listener ID',
+    confirmSend: 'Are you sure you want to send this order?',
+    sending: 'Sending…',
+    sendingPC: 'Sending to PC…',
+    sentTelegram: 'Order sent to Telegram',
+    orderCopied: 'Order copied',
+    copyUnavailable: 'Clipboard unavailable in this browser',
+    settingsSaved: 'Settings saved',
+    orderFailed: 'Send failed',
+    routingFailed: 'PC routing failed',
+    catalogUnavailable: 'Catalog unavailable',
+    first160: 'Showing first 160 matches. Refine your search to narrow results.',
+    close: 'Close',
+    sku: 'SKU',
+    each: 'each',
+    productsLoaded: 'products loaded',
+    offline: 'offline',
+    unknownPC: 'Unknown PC',
+    telegramRejected: 'Telegram rejected the order',
+    pcFailed: 'PC routing failed'
+  },
+
+  id: {
+    connectionSettings: '⚙ Pengaturan koneksi',
+    language: 'Bahasa / Language',
+    searchPlaceholder: 'Cari SKU atau nama produk…',
+    loadingCatalog: 'Memuat katalog…',
+    connectingCatalog: 'Menghubungkan ke katalog produk…',
+    noProducts: 'Produk tidak ditemukan',
+    tryAnother: 'Coba SKU atau nama produk lainnya.',
+    refresh: '↻ Muat ulang',
+    selectQuantity: 'Pilih jumlah',
+    quantity: 'Jumlah',
+    subtotal: 'Subtotal',
+    addToCart: 'Tambah ke Keranjang',
+    catalog: 'Katalog',
+    cart: 'Keranjang',
+    yourOrder: 'Pesanan Anda',
+    differentProducts: 'produk berbeda',
+    total: 'Total',
+    destinationPC: 'PC Tujuan',
+    selectPC: 'Pilih PC',
+    customerType: 'Jenis pelanggan',
+    selectCustomer: 'Pilih pelanggan',
+    sendToPC: 'Kirim ke PC',
+    selectPCFirst: 'Pilih PC terlebih dahulu',
+    sendTelegram: 'Kirim ke Telegram',
+    copyOrder: 'Salin teks pesanan',
+    emptyCart: 'Kosongkan keranjang',
+    remove: 'Hapus',
+    emptyCartTitle: 'Keranjang masih kosong',
+    emptyCartText: 'Tambahkan produk dari katalog.',
+    saveSettings: 'Simpan pengaturan',
+    appsScriptURL: 'URL Apps Script Web App',
+    orderPIN: 'PIN akses pesanan',
+    userSelect: 'Pilih nama',
+    changeUser: 'Ganti pengguna',
+    requesterTitle: 'Siapa yang menggunakan perangkat ini?',
+    requesterPrompt: 'Pilih nama Anda sebelum membuat pesanan.',
+    added: 'Ditambahkan',
+    toCart: 'ke keranjang',
+    cartEmptied: 'Keranjang dikosongkan',
+    confirmEmpty: 'Yakin ingin menghapus semua produk dari keranjang?',
+    selectName: 'Pilih nama Anda sebelum mengirim pesanan',
+    selectCustomerFirst: 'Silakan pilih jenis pelanggan',
+    selectDestination: 'Silakan pilih PC tujuan',
+    setURL: 'Masukkan URL Apps Script terlebih dahulu',
+    enterPIN: 'Masukkan PIN akses pesanan',
+    orderTooLong: 'Pesanan terlalu panjang. Silakan salin teks pesanan.',
+    telegramTooLong: 'Pesanan terlalu panjang untuk dikirim melalui bot. Silakan salin teks pesanan.',
+    confirmTelegram: 'KONFIRMASI PESANAN TELEGRAM',
+    confirmPC: 'KONFIRMASI PESANAN KE PC',
+    destination: 'Tujuan',
+    listenerID: 'ID Listener',
+    confirmSend: 'Apakah Anda yakin ingin mengirim pesanan ini?',
+    sending: 'Mengirim…',
+    sendingPC: 'Mengirim ke PC…',
+    sentTelegram: 'Pesanan terkirim ke Telegram',
+    orderCopied: 'Pesanan berhasil disalin',
+    copyUnavailable: 'Clipboard tidak tersedia di browser ini',
+    settingsSaved: 'Pengaturan berhasil disimpan',
+    orderFailed: 'Pengiriman gagal',
+    routingFailed: 'Pengiriman ke PC gagal',
+    catalogUnavailable: 'Katalog tidak tersedia',
+    first160: 'Menampilkan 160 hasil pertama. Persempit pencarian Anda.',
+    close: 'Tutup',
+    sku: 'SKU',
+    each: 'per item',
+    productsLoaded: 'produk dimuat',
+    offline: 'offline',
+    unknownPC: 'PC tidak dikenal',
+    telegramRejected: 'Telegram menolak pesanan',
+    pcFailed: 'Pengiriman ke PC gagal'
+  }
+};
+
+function t(key) {
+  return LANG[currentLanguage][key] || LANG.en[key] || key;
+}
+
+function applyLanguage() {
+  document.documentElement.lang = currentLanguage;
+
+  $('languageSelect').value = currentLanguage;
+
+  $('settingsButton').textContent = t('connectionSettings');
+  $('searchInput').placeholder = t('searchPlaceholder');
+  $('refreshBtn').textContent = t('refresh');
+
+  $('emptyState').querySelector('strong').textContent = t('noProducts');
+  $('emptyState').querySelector('span').textContent = t('tryAnother');
+
+  $('quantityPanel').querySelector('.panel-head strong').textContent =
+    t('selectQuantity');
+
+  $('quantityPanel').querySelector('label').textContent = t('quantity');
+  $('quantityPanel').querySelector('.quantity-subtotal span').textContent =
+    t('subtotal');
+
+  $('confirmAddToCart').textContent = t('addToCart');
+
+  $('navCatalog').lastChild.textContent = t('catalog');
+  $('navCart').lastChild.textContent = t('cart') + ' ';
+
+  $('cartPanel').querySelector('.panel-head strong').textContent =
+    t('yourOrder');
+
+  $('cartPanel').querySelector('.total-line span').textContent = t('total');
+
+  document.querySelector('label[for="listenerDestination"]').textContent =
+    t('destinationPC');
+
+  document.querySelector('label[for="customerType"]').textContent =
+    t('customerType');
+
+  $('listenerDestination').options[0].textContent = t('selectPC');
+  $('customerType').options[0].textContent = t('selectCustomer');
+
+  $('sendOrder').textContent = t('sendTelegram');
+  $('copyOrder').textContent = t('copyOrder');
+  $('emptyCart').textContent = t('emptyCart');
+  $('saveSettings').textContent = t('saveSettings');
+
+  const settingsLabels = $('settingsPanel').querySelectorAll('label');
+  settingsLabels[0].childNodes[0].textContent = t('appsScriptURL');
+  settingsLabels[1].childNodes[0].textContent = t('orderPIN');
+
+  updateRequesterBadge();
+  renderProducts();
+  renderCart();
+  updatePCButton();
+}
 const $ = id => document.getElementById(id);
 
 const CSV_URL =
@@ -81,8 +293,8 @@ function showRequesterPrompt() {
         padding:22px;background:#fff;color:#222;border-radius:14px;
         box-sizing:border-box
       ">
-        <h2>Siapa yang menggunakan perangkat ini?</h2>
-        <p>Pilih nama Anda sebelum membuat pesanan.</p>
+        <h2>${t('requesterTitle')}</h2>
+<p>${t('requesterPrompt')}</p>
 
         <div style="
           display:grid;
@@ -123,8 +335,8 @@ function updateRequesterBadge() {
 
   if (!badge) return;
 
-  badge.textContent = requesterName || 'Select name';
-  badge.title = 'Change user';
+  badge.textContent = requesterName || t('userSelect');
+badge.title = t('changeUser');
   badge.onclick = showRequesterPrompt;
 }
 
@@ -550,8 +762,8 @@ function renderProducts() {
         <div class="product-price">${money(product.price)}</div>
 
         <button class="add-button" data-add="${esc(product.sku)}">
-          ＋ Add to cart
-        </button>
+  ＋ ${t('addToCart')}
+</button>
       </div>
     </article>
   `).join('');
@@ -585,7 +797,7 @@ function openQuantitySelector(sku) {
   $('quantityProductName').textContent =
     product.short || product.name || product.sku;
 
-  $('quantityProductSku').textContent = `SKU: ${product.sku}`;
+ $('quantityProductSku').textContent = `${t('sku')}: ${product.sku}`;
 
   $('quantityProductPrice').textContent = money(product.price);
 
@@ -655,7 +867,7 @@ function confirmAddToCart() {
   addToCart(sku, quantity);
   closeQuantitySelector();
 
-  showToast(`Added ${quantity} × ${sku} to cart`);
+  showToast(`${t('added')} ${quantity} × ${sku} ${t('toCart')}`);
 }
 
 
@@ -706,7 +918,8 @@ function updateCartBadge() {
 function renderCart() {
   const items = cartValues();
 
-  $('cartSubtitle').textContent = `${items.length} different products`;
+  $('cartSubtitle').textContent =
+  `${items.length} ${t('differentProducts')}`;
 
   $('cartItems').innerHTML = items.length
     ? items.map(item => {
@@ -732,7 +945,7 @@ function renderCart() {
 
               <div class="cart-product-info">
                 <strong>${esc(item.name)}</strong>
-                <small>SKU: ${esc(item.sku)} · ${money(item.price)} each</small>
+                <small>${t('sku')}: ${esc(item.sku)} · ${money(item.price)} ${t('each')}</small>
 
                 <div class="qty-control">
                   <button data-minus="${esc(item.sku)}">−</button>
@@ -748,8 +961,8 @@ function renderCart() {
                   <button data-plus="${esc(item.sku)}">＋</button>
 
                   <button class="remove-button" data-remove="${esc(item.sku)}">
-                    Remove
-                  </button>
+  ${t('remove')}
+</button>
                 </div>
               </div>
             </div>
@@ -761,10 +974,10 @@ function renderCart() {
         `;
       }).join('')
     : `
-      <div class="empty">
-        <strong>Your cart is empty</strong>
-        <span>Add products from the catalog.</span>
-      </div>
+     <div class="empty">
+  <strong>${t('emptyCartTitle')}</strong>
+  <span>${t('emptyCartText')}</span>
+</div>
     `;
 
   $('cartTotal').textContent = money(
@@ -814,13 +1027,13 @@ function changeQty(sku, difference) {
 function emptyCart() {
   if (!cartValues().length) return;
 
-  if (!confirm('Are you sure you want to remove all products from your cart?')) {
+  if (!confirm(t('confirmEmpty'))) {
     return;
   }
 
   cart = {};
   saveCart();
-  showToast('Cart emptied');
+  showToast(t('cartEmptied'));
 }
 
 /* =========================================================
@@ -844,15 +1057,14 @@ function updatePCButton() {
   const button = $('sendToPC');
 
   button.textContent = listenerId
-    ? `Send to ${getListenerName(listenerId)}`
-    : 'Select a PC first';
+    ? `${t('sendToPC')} · ${getListenerName(listenerId)}`
+    : t('selectPCFirst');
 
   button.disabled =
     !listenerId ||
     !customerType ||
     !cartValues().length;
 }
-
 function orderText() {
   const items = cartValues();
 
@@ -911,13 +1123,13 @@ if (!customerType) {
 }
 
 order.customerType = customerType;
-     if (!confirm(
-    'CONFIRM TELEGRAM ORDER\n\n' +
-    'Destination: TELEGRAM\n\n' +
-    'Are you sure you want to send this order?'
-  )) {
-    return;
-  }
+    if (!confirm(
+  t('confirmTelegram') + '\n\n' +
+  t('destination') + ': TELEGRAM\n\n' +
+  t('confirmSend')
+)) {
+  return;
+}
   const url = (settings.scriptUrl || '').trim();
   const pin = (settings.pin || '').trim();
 
@@ -967,7 +1179,7 @@ order.customerType = customerType;
     );
   } finally {
     button.disabled = false;
-    button.textContent = 'Send order to Telegram';
+    button.textContent = t('sendTelegram');
   }
 }
 
@@ -975,14 +1187,14 @@ order.customerType = customerType;
 async function sendToPC() {
      if (!REQUESTER_NAMES.includes(requesterName)) {
     showRequesterPrompt();
-    showToast('Select your name before sending an order');
+    showToast('t('selectName')');
     return;
   }
   const order = orderText();
 const customerType = $('customerType').value;
 
 if (!customerType) {
-  showToast('Please select a customer type');
+  showToast('t('selectCustomerFirst')');
   return;
 }
 
@@ -994,40 +1206,40 @@ const listenerId = $('listenerDestination').value;
 
   if (!url) {
     openSettings();
-    showToast('Set your Apps Script URL first');
+    showToast('	t('setURL')');
     return;
   }
 
   if (!pin) {
     openSettings();
-    showToast('Enter the order access PIN');
+    showToast('	t('enterPIN')');
     return;
   }
 
   if (!listenerId) {
-    showToast('Please select a destination PC');
+    showToast('t('selectDestination')');
     return;
   }
 
      const destinationName = getListenerName(listenerId);
 
   if (!confirm(
-    'CONFIRM PC ORDER\n\n' +
-    'Destination: ' + destinationName + '\n' +
-    'Listener ID: ' + listenerId + '\n\n' +
-    'Are you sure you want to send this order?'
+    't('confirmPC')\n\n' +
+    't('destination'): ' + destinationName + '\n' +
+    't('listenerID'): ' + listenerId + '\n\n' +
+    '	t('confirmSend')'
   )) {
     return;
   }
 
   if (order.text.length > 1500) {
-    showToast('Order is too long. Copy it instead.');
+    showToast('t('orderTooLong')');
     return;
   }
 
   const button = $('sendToPC');
   button.disabled = true;
-  button.textContent = 'Sending to PC…';
+  button.textContent = '	t('sendingPC')';
 
   try {
     const query = new URLSearchParams({
@@ -1040,7 +1252,7 @@ const listenerId = $('listenerDestination').value;
     const result = await jsonp(url + '?' + query.toString(), 30000);
 
     if (!result.ok) {
-      throw new Error(result.error || 'PC routing failed');
+      throw new Error(result.error || 't('pcFailed')');
     }
 
     showToast(`Order sent to ${result.deviceName}`);
@@ -1061,9 +1273,9 @@ const listenerId = $('listenerDestination').value;
 async function copyOrder() {
   try {
     await navigator.clipboard.writeText(orderText().text);
-    showToast('Order copied');
+    showToast(t('orderCopied'));
   } catch {
-    showToast('Clipboard unavailable in this browser');
+    showToast(t('copyUnavailable'));
   }
 }
 
@@ -1133,6 +1345,13 @@ function bindEvents() {
       menuButton.setAttribute('aria-expanded', 'false');
     }
   });
+   $('languageSelect').addEventListener('change', event => {
+  currentLanguage = event.target.value === 'id' ? 'id' : 'en';
+
+  localStorage.setItem(LANGUAGE_KEY, currentLanguage);
+
+  applyLanguage();
+});
   let previousSearchQuery = '';
 
 $('searchInput').addEventListener('input', () => {
@@ -1229,7 +1448,7 @@ $('emptyCart').onclick = emptyCart;
 
     writeStorage(CONFIG.settingsKey, settings);
     closeSettings();
-    showToast('Settings saved');
+    showToast(t('settingsSaved'));
   };
 }
 
@@ -1240,6 +1459,7 @@ $('emptyCart').onclick = emptyCart;
 
 function initializeApp() {
   bindEvents();
+     applyLanguage();
   ensureRequesterIdentity();
 
   updateCartBadge();
