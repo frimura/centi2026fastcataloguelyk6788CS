@@ -128,8 +128,6 @@ function updateRequesterBadge() {
   badge.onclick = showRequesterPrompt;
 }
 
-  badge.textContent = `User: ${requesterName || 'Select name'} · Change`;
-}
 
 function ensureRequesterIdentity() {
   updateRequesterBadge();
