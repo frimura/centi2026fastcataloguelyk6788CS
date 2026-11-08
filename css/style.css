@@ -1052,3 +1052,52 @@ main {
     width: 27px;
   }
 }
+/* =========================================================
+   COMPACT CART FOOTER
+   ========================================================= */
+
+.cart-footer {
+  padding: 12px 17px calc(14px + env(safe-area-inset-bottom));
+}
+
+.cart-footer .total-line {
+  margin-bottom: 12px;
+}
+
+.cart-footer .destination-label {
+  display: block;
+  margin: 4px 0 2px;
+  font-size: 13px;
+  font-weight: 600;
+}
+
+.cart-footer .destination-select {
+  width: 100%;
+  min-height: 42px;
+  padding: 8px 12px;
+  border: 1px solid var(--line);
+  border-radius: 9px;
+  background: var(--white);
+  color: var(--ink);
+  font-size: 14px;
+}
+
+.cart-footer > button {
+  width: 100%;
+  min-height: 46px;
+  padding: 10px 12px;
+  margin: 0;
+  border-radius: 9px;
+  font-size: 15px;
+  line-height: 1.25;
+}
+
+.cart-footer > button + button {
+  margin-top: 7px;
+}
+
+.cart-footer .footnote {
+  margin-top: 9px;
+  font-size: 10px;
+  line-height: 1.4;
+}
