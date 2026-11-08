@@ -840,13 +840,17 @@ function getListenerName(listenerId) {
 
 function updatePCButton() {
   const listenerId = $('listenerDestination').value;
+  const customerType = $('customerType').value;
   const button = $('sendToPC');
 
   button.textContent = listenerId
     ? `Send to ${getListenerName(listenerId)}`
     : 'Select a PC first';
 
-  button.disabled = !listenerId || !cartValues().length;
+  button.disabled =
+    !listenerId ||
+    !customerType ||
+    !cartValues().length;
 }
 
 function orderText() {
@@ -899,6 +903,14 @@ async function sendOrder()
     return;
   }
   const order = orderText();
+const customerType = $('customerType').value;
+
+if (!customerType) {
+  showToast('Please select a customer type');
+  return;
+}
+
+order.customerType = customerType;
      if (!confirm(
     'CONFIRM TELEGRAM ORDER\n\n' +
     'Destination: TELEGRAM\n\n' +
@@ -1186,6 +1198,7 @@ $('sendOrder').onclick = sendOrder;
 $('sendToPC').onclick = sendToPC;
 
 $('listenerDestination').addEventListener('change', updatePCButton);
+$('customerType').addEventListener('change', updatePCButton);
 
 updatePCButton();
 $('copyOrder').onclick = copyOrder;
