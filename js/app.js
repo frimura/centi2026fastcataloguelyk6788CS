@@ -826,7 +826,8 @@ function getListenerName(listenerId) {
   const names = {
     'CENTI-PC': 'PC DEPAN',
     'CENTI-CS-1': 'BUDI',
-    'CENTI-CS-2': 'RAUF'
+    'CENTI-CS-2': 'RAUF',
+     'CENTI-SOLO-MEGA': 'SOLO MEGABOOK'
   };
 
   return names[listenerId] || 'Unknown PC';
