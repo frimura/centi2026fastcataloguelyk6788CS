@@ -12,11 +12,12 @@ const CONFIG = {
   cacheKey: 'centi_catalog_rows_v1',
   cartKey: 'centi_catalog_cart_v1',
   settingsKey: 'centi_catalog_settings_v1',
-   identityKey: 'centi_catalog_requester_v1',
+  identityKey: 'centi_catalog_requester_v1',
   refreshInterval: 5 * 60 * 1000
 };
+
 /* =========================================================
-   LANGUAGE CONFIGURATION
+   2. LANGUAGE CONFIGURATION
    ========================================================= */
 
 const LANGUAGE_KEY = 'centi_catalog_language_v1';
@@ -81,6 +82,7 @@ const LANG = {
     sending: 'Sending…',
     sendingPC: 'Sending to PC…',
     sentTelegram: 'Order sent to Telegram',
+    sentToPC: 'Order sent to',
     orderCopied: 'Order copied',
     copyUnavailable: 'Clipboard unavailable in this browser',
     settingsSaved: 'Settings saved',
@@ -95,7 +97,22 @@ const LANG = {
     offline: 'offline',
     unknownPC: 'Unknown PC',
     telegramRejected: 'Telegram rejected the order',
-    pcFailed: 'PC routing failed'
+    pcFailed: 'PC routing failed',
+    usingSavedCatalog: 'Using saved catalog',
+    refreshFailed: 'Refresh failed',
+    connectingSheets: 'Connecting to Google Sheets…',
+    couldNotLoad: 'Could not load catalog',
+    showingFirst: 'Showing first',
+    of: 'of',
+    products: 'products',
+    matching: 'matching products',
+    spellingCorrected: 'spelling corrected',
+    noEveryWord: 'No product matches every word',
+    closest: 'closest products',
+    fullTitle: 'found in full product title',
+    ranked: 'ranked by relevance',
+    sendFailedCopy: 'You can copy the order instead.',
+    sentTo: 'Order sent to'
   },
 
   id: {
@@ -154,6 +171,7 @@ const LANG = {
     sending: 'Mengirim…',
     sendingPC: 'Mengirim ke PC…',
     sentTelegram: 'Pesanan terkirim ke Telegram',
+    sentToPC: 'Pesanan terkirim ke',
     orderCopied: 'Pesanan berhasil disalin',
     copyUnavailable: 'Clipboard tidak tersedia di browser ini',
     settingsSaved: 'Pengaturan berhasil disimpan',
@@ -168,7 +186,22 @@ const LANG = {
     offline: 'offline',
     unknownPC: 'PC tidak dikenal',
     telegramRejected: 'Telegram menolak pesanan',
-    pcFailed: 'Pengiriman ke PC gagal'
+    pcFailed: 'Pengiriman ke PC gagal',
+    usingSavedCatalog: 'Menggunakan katalog tersimpan',
+    refreshFailed: 'Pembaruan gagal',
+    connectingSheets: 'Menghubungkan ke Google Sheets…',
+    couldNotLoad: 'Tidak dapat memuat katalog',
+    showingFirst: 'Menampilkan',
+    of: 'dari',
+    products: 'produk',
+    matching: 'produk cocok',
+    spellingCorrected: 'ejaan diperbaiki',
+    noEveryWord: 'Tidak ada produk yang cocok dengan semua kata',
+    closest: 'produk terdekat',
+    fullTitle: 'ditemukan dalam judul produk lengkap',
+    ranked: 'diurutkan berdasarkan relevansi',
+    sendFailedCopy: 'Anda dapat menyalin teks pesanan.',
+    sentTo: 'Pesanan terkirim ke'
   }
 };
 
@@ -176,10 +209,13 @@ function t(key) {
   return LANG[currentLanguage][key] || LANG.en[key] || key;
 }
 
+const $ = id => document.getElementById(id);
+
 function applyLanguage() {
   document.documentElement.lang = currentLanguage;
 
-  $('languageSelect').value = currentLanguage;
+  const languageSelect = $('languageSelect');
+  if (languageSelect) languageSelect.value = currentLanguage;
 
   $('settingsButton').textContent = t('connectionSettings');
   $('searchInput').placeholder = t('searchPlaceholder');
@@ -220,15 +256,22 @@ function applyLanguage() {
   $('saveSettings').textContent = t('saveSettings');
 
   const settingsLabels = $('settingsPanel').querySelectorAll('label');
-  settingsLabels[0].childNodes[0].textContent = t('appsScriptURL');
-  settingsLabels[1].childNodes[0].textContent = t('orderPIN');
+  if (settingsLabels[0]) {
+    settingsLabels[0].childNodes[0].textContent = t('appsScriptURL');
+  }
+  if (settingsLabels[1]) {
+    settingsLabels[1].childNodes[0].textContent = t('orderPIN');
+  }
 
   updateRequesterBadge();
   renderProducts();
   renderCart();
   updatePCButton();
 }
-const $ = id => document.getElementById(id);
+
+/* =========================================================
+   3. STATE AND STORAGE
+   ========================================================= */
 
 const CSV_URL =
   `https://docs.google.com/spreadsheets/d/${CONFIG.spreadsheetId}/export?format=csv&gid=${CONFIG.gid}`;
@@ -242,10 +285,7 @@ let refreshTimer = null;
 let catalogRequest = null;
 let selectedProduct = null;
 let requesterName = readStorage(CONFIG.identityKey, '');
-
-/* =========================================================
-   2. STORAGE HELPERS
-   ========================================================= */
+let previousSearchQuery = '';
 
 function readStorage(key, fallback) {
   try {
@@ -264,8 +304,9 @@ function writeStorage(key, value) {
     console.warn(`Could not save storage "${key}".`, error);
   }
 }
+
 /* =========================================================
-   REQUESTER IDENTITY
+   4. REQUESTER IDENTITY
    ========================================================= */
 
 const REQUESTER_NAMES = [
@@ -294,8 +335,7 @@ function showRequesterPrompt() {
         box-sizing:border-box
       ">
         <h2>${t('requesterTitle')}</h2>
-<p>${t('requesterPrompt')}</p>
-
+        <p>${t('requesterPrompt')}</p>
         <div style="
           display:grid;
           grid-template-columns:repeat(2,minmax(0,1fr));
@@ -318,13 +358,17 @@ function showRequesterPrompt() {
     overlay.querySelectorAll('[data-requester]').forEach(button => {
       button.addEventListener('click', () => {
         requesterName = button.dataset.requester;
-
         writeStorage(CONFIG.identityKey, requesterName);
-
         overlay.style.display = 'none';
         updateRequesterBadge();
       });
     });
+  } else {
+    const heading = overlay.querySelector('h2');
+    const paragraph = overlay.querySelector('p');
+
+    if (heading) heading.textContent = t('requesterTitle');
+    if (paragraph) paragraph.textContent = t('requesterPrompt');
   }
 
   overlay.style.display = 'flex';
@@ -332,14 +376,12 @@ function showRequesterPrompt() {
 
 function updateRequesterBadge() {
   const badge = $('requesterIdentityBadge');
-
   if (!badge) return;
 
   badge.textContent = requesterName || t('userSelect');
-badge.title = t('changeUser');
+  badge.title = t('changeUser');
   badge.onclick = showRequesterPrompt;
 }
-
 
 function ensureRequesterIdentity() {
   updateRequesterBadge();
@@ -350,7 +392,7 @@ function ensureRequesterIdentity() {
 }
 
 /* =========================================================
-   3. GENERAL HELPERS
+   5. GENERAL HELPERS
    ========================================================= */
 
 function money(value) {
@@ -371,9 +413,8 @@ function esc(value) {
   })[char]);
 }
 
-
 /* =========================================================
-   4. GOOGLE SHEETS CSV PARSING
+   6. GOOGLE SHEETS CSV PARSING
    ========================================================= */
 
 function parseCSV(text) {
@@ -457,9 +498,8 @@ function normalize(rows) {
     .filter(product => product.sku);
 }
 
-
 /* =========================================================
-   5. APPS SCRIPT CONNECTION
+   7. APPS SCRIPT CONNECTION
    ========================================================= */
 
 function jsonp(url, timeoutMs = 30000) {
@@ -533,9 +573,8 @@ async function fetchCatalogFromAppsScript() {
   return rows;
 }
 
-
 /* =========================================================
-   6. CATALOG LOADING AND AUTOMATIC REFRESH
+   8. CATALOG LOADING AND AUTOMATIC REFRESH
    ========================================================= */
 
 function showCatalogStatus(message, isError = false) {
@@ -553,8 +592,8 @@ function showCachedCatalog(error) {
   products = cachedRows;
 
   showCatalogStatus(
-    `Using saved catalog (${products.length.toLocaleString('id-ID')} products). ` +
-    `Refresh failed: ${error.message}`,
+    `${t('usingSavedCatalog')} (${products.length.toLocaleString('id-ID')} ${t('products')}). ` +
+    `${t('refreshFailed')}: ${error.message}`,
     true
   );
 
@@ -573,7 +612,7 @@ async function loadCatalog(options = {}) {
     const refreshButton = $('refreshBtn');
 
     if (!silent) {
-      showCatalogStatus('Connecting to Google Sheets…');
+      showCatalogStatus(t('connectingSheets'));
     }
 
     if (refreshButton) {
@@ -594,8 +633,8 @@ async function loadCatalog(options = {}) {
       writeStorage(CONFIG.cacheKey, products);
 
       showCatalogStatus(
-        `${products.length.toLocaleString('id-ID')} products loaded` +
-        `${navigator.onLine ? '' : ' · offline'}`
+        `${products.length.toLocaleString('id-ID')} ${t('productsLoaded')}` +
+        `${navigator.onLine ? '' : ' · ' + t('offline')}`
       );
 
       renderProducts();
@@ -608,10 +647,10 @@ async function loadCatalog(options = {}) {
 
       if (!usedCache) {
         showCatalogStatus(
-          `Could not load catalog: ${error.message}`,
+          `${t('couldNotLoad')}: ${error.message}`,
           true
         );
-        $('resultCount').textContent = 'Catalog unavailable';
+        $('resultCount').textContent = t('catalogUnavailable');
       }
 
       return false;
@@ -635,40 +674,39 @@ function startAutomaticRefresh() {
 
   refreshTimer = setInterval(() => {
     if (document.hidden || !navigator.onLine) return;
-
     loadCatalog({ silent: true });
   }, CONFIG.refreshInterval);
 }
 
-
 /* =========================================================
-   7. SEARCH RESULTS AND REFINEMENT
+   9. SEARCH RESULTS AND REFINEMENT
    ========================================================= */
 
 function resultLabel(result, list) {
   const count = list.length.toLocaleString('id-ID');
 
   if (!result) {
-    return `Showing first ${list.length} of ${CentiSearch.count().toLocaleString('id-ID')} products`;
+    return `${t('showingFirst')} ${list.length} ${t('of')} ` +
+      `${CentiSearch.count().toLocaleString('id-ID')} ${t('products')}`;
   }
 
   if (result.mode === 'corrected') {
-    return `${count} matching products for “${result.corrected}” (spelling corrected)`;
+    return `${count} ${t('matching')} “${result.corrected}” (${t('spellingCorrected')})`;
   }
 
   if (result.mode === 'partial') {
-    return `No product matches every word · ${count} closest products`;
+    return `${t('noEveryWord')} · ${count} ${t('closest')}`;
   }
 
   if (result.mode === 'full') {
-    return `${count} matching products (found in full product title)`;
+    return `${count} ${t('matching')} (${t('fullTitle')})`;
   }
 
   if (result.mode === 'ranked') {
-    return `${count} products · ranked by relevance`;
+    return `${count} ${t('products')} · ${t('ranked')}`;
   }
 
-  return `${count} matching products`;
+  return `${count} ${t('matching')}`;
 }
 
 function renderRefine(result) {
@@ -700,23 +738,22 @@ function renderRefine(result) {
       'font:inherit;font-size:.85em;cursor:pointer;opacity:.85';
 
     button.onclick = () => {
-  const input = $('searchInput');
-  input.value = (input.value.trim() + ' ' + chip.add).trim();
+      const input = $('searchInput');
+      input.value = (input.value.trim() + ' ' + chip.add).trim();
 
-  window.scrollTo({ top: 0, behavior: 'smooth' });
+      window.scrollTo({ top: 0, behavior: 'smooth' });
 
-  previousSearchQuery = input.value.trim();
-  renderProducts();
-  input.focus();
-};
+      previousSearchQuery = input.value.trim();
+      renderProducts();
+      input.focus();
+    };
 
     box.appendChild(button);
   });
 }
 
-
 /* =========================================================
-   8. PRODUCT RENDERING
+   10. PRODUCT RENDERING
    ========================================================= */
 
 function renderProducts() {
@@ -753,7 +790,7 @@ function renderProducts() {
           ${esc(product.short || product.name || product.sku)}
         </div>
 
-        <div class="product-sku">SKU: ${esc(product.sku)}</div>
+        <div class="product-sku">${t('sku')}: ${esc(product.sku)}</div>
 
         <div class="product-variation">
           ${esc(product.variation || product.notes || '')}
@@ -762,8 +799,8 @@ function renderProducts() {
         <div class="product-price">${money(product.price)}</div>
 
         <button class="add-button" data-add="${esc(product.sku)}">
-  ＋ ${t('addToCart')}
-</button>
+          ＋ ${t('addToCart')}
+        </button>
       </div>
     </article>
   `).join('');
@@ -771,21 +808,18 @@ function renderProducts() {
   $('emptyState').classList.toggle('hidden', list.length !== 0);
 
   if (list.length > 160) {
-    showCatalogStatus(
-      'Showing first 160 matches. Refine your search to narrow results.'
-    );
+    showCatalogStatus(t('first160'));
   }
 
   host.querySelectorAll('[data-add]').forEach(button => {
-  button.addEventListener('click', () => {
-    openQuantitySelector(button.dataset.add);
+    button.addEventListener('click', () => {
+      openQuantitySelector(button.dataset.add);
+    });
   });
-});
 }
 
-
 /* =========================================================
-   PRODUCT QUANTITY SELECTOR
+   11. PRODUCT QUANTITY SELECTOR
    ========================================================= */
 
 function openQuantitySelector(sku) {
@@ -797,10 +831,8 @@ function openQuantitySelector(sku) {
   $('quantityProductName').textContent =
     product.short || product.name || product.sku;
 
- $('quantityProductSku').textContent = `${t('sku')}: ${product.sku}`;
-
+  $('quantityProductSku').textContent = `${t('sku')}: ${product.sku}`;
   $('quantityProductPrice').textContent = money(product.price);
-
   $('productQuantity').value = 1;
 
   const image = $('quantityImage');
@@ -839,7 +871,6 @@ function updateQuantitySubtotal() {
 
   const rawValue = $('productQuantity').value;
 
-  // Allow an empty field while the user is typing
   if (rawValue === '') {
     $('quantitySubtotal').textContent = money(0);
     return;
@@ -870,11 +901,9 @@ function confirmAddToCart() {
   showToast(`${t('added')} ${quantity} × ${sku} ${t('toCart')}`);
 }
 
-
 /* =========================================================
-   9. SHOPPING CART
+   12. SHOPPING CART
    ========================================================= */
-
 
 function addToCart(sku, quantity = 1) {
   const product = products.find(item => item.sku === sku);
@@ -896,7 +925,6 @@ function addToCart(sku, quantity = 1) {
   saveCart();
 }
 
-
 function saveCart() {
   writeStorage(CONFIG.cartKey, cart);
   updateCartBadge();
@@ -914,16 +942,14 @@ function updateCartBadge() {
   $('navCartCount').textContent = count;
 }
 
-
 function renderCart() {
   const items = cartValues();
 
   $('cartSubtitle').textContent =
-  `${items.length} ${t('differentProducts')}`;
+    `${items.length} ${t('differentProducts')}`;
 
   $('cartItems').innerHTML = items.length
     ? items.map(item => {
-        // Support older cart entries that were saved before images were added.
         const product = products.find(p => p.sku === item.sku);
         const image = item.image || product?.image || '';
 
@@ -961,8 +987,8 @@ function renderCart() {
                   <button data-plus="${esc(item.sku)}">＋</button>
 
                   <button class="remove-button" data-remove="${esc(item.sku)}">
-  ${t('remove')}
-</button>
+                    ${t('remove')}
+                  </button>
                 </div>
               </div>
             </div>
@@ -974,10 +1000,10 @@ function renderCart() {
         `;
       }).join('')
     : `
-     <div class="empty">
-  <strong>${t('emptyCartTitle')}</strong>
-  <span>${t('emptyCartText')}</span>
-</div>
+      <div class="empty">
+        <strong>${t('emptyCartTitle')}</strong>
+        <span>${t('emptyCartText')}</span>
+      </div>
     `;
 
   $('cartTotal').textContent = money(
@@ -985,9 +1011,9 @@ function renderCart() {
   );
 
   $('sendOrder').disabled = !items.length;
-updatePCButton();
-$('copyOrder').disabled = !items.length;
-$('emptyCart').disabled = !items.length;
+  updatePCButton();
+  $('copyOrder').disabled = !items.length;
+  $('emptyCart').disabled = !items.length;
 
   $('cartItems').querySelectorAll('[data-minus]').forEach(button => {
     button.onclick = () => changeQty(button.dataset.minus, -1);
@@ -1024,6 +1050,7 @@ function changeQty(sku, difference) {
 
   saveCart();
 }
+
 function emptyCart() {
   if (!cartValues().length) return;
 
@@ -1037,18 +1064,19 @@ function emptyCart() {
 }
 
 /* =========================================================
-   10. ORDER GENERATION AND TELEGRAM
+   13. ORDER GENERATION AND TELEGRAM
    ========================================================= */
+
 function getListenerName(listenerId) {
   const names = {
     'CENTI-PC': 'PC DEPAN',
     'CENTI-CS-1': 'BUDI',
     'CENTI-CS-2': 'RAUF',
-   'CENTI-SOLO-MEGA': 'SOLO MEGABOOK',
-     'FRISKY-PC': 'FRISKY-NITRO'
+    'CENTI-SOLO-MEGA': 'SOLO MEGABOOK',
+    'FRISKY-PC': 'FRISKY-NITRO'
   };
 
-  return names[listenerId] || 'Unknown PC';
+  return names[listenerId] || t('unknownPC');
 }
 
 function updatePCButton() {
@@ -1065,6 +1093,7 @@ function updatePCButton() {
     !customerType ||
     !cartValues().length;
 }
+
 function orderText() {
   const items = cartValues();
 
@@ -1080,8 +1109,8 @@ function orderText() {
     `New Order: ${id}`,
     '---------------------------------',
     'Pelanggan: Catalog Order',
-`Requested by: ${requesterName || 'Unknown'}`,
-'No : Mobile Catalog',
+    `Requested by: ${requesterName || 'Unknown'}`,
+    'No : Mobile Catalog',
     '',
     'Pesanan :'
   ];
@@ -1106,53 +1135,54 @@ function orderText() {
   };
 }
 
-
-async function sendOrder() 
-{
-     if (!REQUESTER_NAMES.includes(requesterName)) {
+async function sendOrder() {
+  if (!REQUESTER_NAMES.includes(requesterName)) {
     showRequesterPrompt();
-    showToast('Select your name before sending an order');
+    showToast(t('selectName'));
     return;
   }
+
   const order = orderText();
-const customerType = $('customerType').value;
+  const customerType = $('customerType').value;
 
-if (!customerType) {
-  showToast('Please select a customer type');
-  return;
-}
+  if (!customerType) {
+    showToast(t('selectCustomerFirst'));
+    return;
+  }
 
-order.customerType = customerType;
-    if (!confirm(
-  t('confirmTelegram') + '\n\n' +
-  t('destination') + ': TELEGRAM\n\n' +
-  t('confirmSend')
-)) {
-  return;
-}
+  order.customerType = customerType;
+
+  if (!confirm(
+    t('confirmTelegram') + '\n\n' +
+    t('destination') + ': TELEGRAM\n\n' +
+    t('confirmSend')
+  )) {
+    return;
+  }
+
   const url = (settings.scriptUrl || '').trim();
   const pin = (settings.pin || '').trim();
 
   if (!url) {
     openSettings();
-    showToast('Set your Apps Script URL first');
+    showToast(t('setURL'));
     return;
   }
 
   if (!pin) {
     openSettings();
-    showToast('Enter the order access PIN');
+    showToast(t('enterPIN'));
     return;
   }
 
   if (order.text.length > 1500) {
-    showToast('Order is too long for the secure bot request. Copy it instead.');
+    showToast(t('telegramTooLong'));
     return;
   }
 
   const button = $('sendOrder');
   button.disabled = true;
-  button.textContent = 'Sending…';
+  button.textContent = t('sending');
 
   try {
     const query = new URLSearchParams({
@@ -1164,82 +1194,80 @@ order.customerType = customerType;
     const result = await jsonp(url + '?' + query.toString(), 30000);
 
     if (!result.ok) {
-      throw new Error(result.error || 'Telegram rejected the order');
+      throw new Error(result.error || t('telegramRejected'));
     }
 
-    showToast('Order sent to Telegram');
+    showToast(t('sentTelegram'));
 
     cart = {};
     saveCart();
     closeCart();
 
   } catch (error) {
-    showToast(
-      `Send failed: ${error.message}. You can copy the order instead.`
-    );
+    showToast(`${t('orderFailed')}: ${error.message}. ${t('sendFailedCopy')}`);
   } finally {
     button.disabled = false;
     button.textContent = t('sendTelegram');
   }
 }
 
-
 async function sendToPC() {
-     if (!REQUESTER_NAMES.includes(requesterName)) {
+  if (!REQUESTER_NAMES.includes(requesterName)) {
     showRequesterPrompt();
-    showToast('t('selectName')');
+    showToast(t('selectName'));
     return;
   }
+
   const order = orderText();
-const customerType = $('customerType').value;
+  const customerType = $('customerType').value;
 
-if (!customerType) {
-  showToast('t('selectCustomerFirst')');
-  return;
-}
+  if (!customerType) {
+    showToast(t('selectCustomerFirst'));
+    return;
+  }
 
-order.customerType = customerType;
+  order.customerType = customerType;
 
-const url = (settings.scriptUrl || '').trim();
-const pin = (settings.pin || '').trim();
-const listenerId = $('listenerDestination').value;
+  const url = (settings.scriptUrl || '').trim();
+  const pin = (settings.pin || '').trim();
+  const listenerId = $('listenerDestination').value;
 
   if (!url) {
     openSettings();
-    showToast('	t('setURL')');
+    showToast(t('setURL'));
     return;
   }
 
   if (!pin) {
     openSettings();
-    showToast('	t('enterPIN')');
+    showToast(t('enterPIN'));
     return;
   }
 
   if (!listenerId) {
-    showToast('t('selectDestination')');
+    showToast(t('selectDestination'));
     return;
   }
 
-     const destinationName = getListenerName(listenerId);
+  const destinationName = getListenerName(listenerId);
 
   if (!confirm(
-    't('confirmPC')\n\n' +
-    't('destination'): ' + destinationName + '\n' +
-    't('listenerID'): ' + listenerId + '\n\n' +
-    '	t('confirmSend')'
+    t('confirmPC') + '\n\n' +
+    t('destination') + ': ' + destinationName + '\n' +
+    t('listenerID') + ': ' + listenerId + '\n\n' +
+    t('confirmSend')
   )) {
     return;
   }
 
   if (order.text.length > 1500) {
-    showToast('t('orderTooLong')');
+    showToast(t('orderTooLong'));
     return;
   }
 
   const button = $('sendToPC');
   button.disabled = true;
-  button.textContent = '	t('sendingPC')';
+  button.textContent = t('sendingPC');
 
   try {
     const query = new URLSearchParams({
@@ -1252,23 +1280,22 @@ const listenerId = $('listenerDestination').value;
     const result = await jsonp(url + '?' + query.toString(), 30000);
 
     if (!result.ok) {
-      throw new Error(result.error || 't('pcFailed')');
+      throw new Error(result.error || t('pcFailed'));
     }
 
-    showToast(`Order sent to ${result.deviceName}`);
+    showToast(`${t('sentToPC')} ${result.deviceName || destinationName}`);
 
     cart = {};
     saveCart();
     closeCart();
 
   } catch (error) {
-    showToast(`PC routing failed: ${error.message}`);
+    showToast(`${t('routingFailed')}: ${error.message}`);
   } finally {
     button.disabled = false;
-   updatePCButton();
+    updatePCButton();
   }
 }
-
 
 async function copyOrder() {
   try {
@@ -1279,9 +1306,8 @@ async function copyOrder() {
   }
 }
 
-
 /* =========================================================
-   11. PANELS AND NOTIFICATIONS
+   14. PANELS AND NOTIFICATIONS
    ========================================================= */
 
 function openCart() {
@@ -1320,17 +1346,15 @@ function showToast(message) {
   }, 2600);
 }
 
-
 /* =========================================================
-   12. EVENT LISTENERS
+   15. EVENT LISTENERS
    ========================================================= */
 
 function bindEvents() {
-     // Header three-dot menu
   const menuButton = $('headerMenuButton');
   const menu = $('headerMenu');
 
-  menuButton.onclick = (event) => {
+  menuButton.onclick = event => {
     event.stopPropagation();
 
     const isOpen = !menu.classList.contains('hidden');
@@ -1339,45 +1363,52 @@ function bindEvents() {
     menuButton.setAttribute('aria-expanded', String(!isOpen));
   };
 
-  document.addEventListener('click', (event) => {
+  document.addEventListener('click', event => {
     if (!event.target.closest('.header-menu')) {
       menu.classList.add('hidden');
       menuButton.setAttribute('aria-expanded', 'false');
     }
   });
-   $('languageSelect').addEventListener('change', event => {
-  currentLanguage = event.target.value === 'id' ? 'id' : 'en';
 
-  localStorage.setItem(LANGUAGE_KEY, currentLanguage);
+  const languageSelect = $('languageSelect');
 
-  applyLanguage();
-});
-  let previousSearchQuery = '';
+  if (languageSelect) {
+    languageSelect.addEventListener('change', event => {
+      currentLanguage = event.target.value === 'id' ? 'id' : 'en';
 
-$('searchInput').addEventListener('input', () => {
-  clearTimeout(searchTimer);
+      try {
+        localStorage.setItem(LANGUAGE_KEY, currentLanguage);
+      } catch (error) {
+        console.warn('Could not save language preference:', error);
+      }
 
-  const query = $('searchInput').value.trim();
-
-  // Scroll to the top when a new search begins
-  if (query && !previousSearchQuery) {
-    window.scrollTo({ top: 0, behavior: 'smooth' });
+      applyLanguage();
+    });
   }
 
-  previousSearchQuery = query;
+  $('searchInput').addEventListener('input', () => {
+    clearTimeout(searchTimer);
 
-  searchTimer = setTimeout(renderProducts, 120);
-});
+    const query = $('searchInput').value.trim();
+
+    if (query && !previousSearchQuery) {
+      window.scrollTo({ top: 0, behavior: 'smooth' });
+    }
+
+    previousSearchQuery = query;
+
+    searchTimer = setTimeout(renderProducts, 120);
+  });
 
   $('clearSearch').onclick = () => {
     $('searchInput').value = '';
+    previousSearchQuery = '';
     renderProducts();
     $('searchInput').focus();
   };
 
   $('refreshBtn').onclick = () => loadCatalog();
-   
-  // Quantity selector controls
+
   $('closeQuantity').onclick = closeQuantitySelector;
   $('quantityOverlay').onclick = closeQuantitySelector;
 
@@ -1395,20 +1426,21 @@ $('searchInput').addEventListener('input', () => {
 
   $('productQuantity').addEventListener('input', updateQuantitySubtotal);
 
-   $('productQuantity').addEventListener('focus', (event) => {
-  event.target.value = '';
-  updateQuantitySubtotal();
-});
-   $('productQuantity').addEventListener('blur', () => {
-  const input = $('productQuantity');
+  $('productQuantity').addEventListener('focus', event => {
+    event.target.value = '';
+    updateQuantitySubtotal();
+  });
 
-  input.value = Math.max(
-    1,
-    Math.floor(Number(input.value) || 1)
-  );
+  $('productQuantity').addEventListener('blur', () => {
+    const input = $('productQuantity');
 
-  updateQuantitySubtotal();
-});
+    input.value = Math.max(
+      1,
+      Math.floor(Number(input.value) || 1)
+    );
+
+    updateQuantitySubtotal();
+  });
 
   $('confirmAddToCart').onclick = confirmAddToCart;
 
@@ -1422,21 +1454,21 @@ $('searchInput').addEventListener('input', () => {
   $('closeCart').onclick = closeCart;
   $('cartOverlay').onclick = closeCart;
 
-$('sendOrder').onclick = sendOrder;
-$('sendToPC').onclick = sendToPC;
+  $('sendOrder').onclick = sendOrder;
+  $('sendToPC').onclick = sendToPC;
 
-$('listenerDestination').addEventListener('change', updatePCButton);
-$('customerType').addEventListener('change', updatePCButton);
+  $('listenerDestination').addEventListener('change', updatePCButton);
+  $('customerType').addEventListener('change', updatePCButton);
 
-updatePCButton();
-$('copyOrder').onclick = copyOrder;
-$('emptyCart').onclick = emptyCart;
+  $('copyOrder').onclick = copyOrder;
+  $('emptyCart').onclick = emptyCart;
 
   $('settingsButton').onclick = () => {
-  $('headerMenu').classList.add('hidden');
-  $('headerMenuButton').setAttribute('aria-expanded', 'false');
-  openSettings();
-};
+    $('headerMenu').classList.add('hidden');
+    $('headerMenuButton').setAttribute('aria-expanded', 'false');
+    openSettings();
+  };
+
   $('closeSettings').onclick = closeSettings;
   $('settingsOverlay').onclick = closeSettings;
 
@@ -1452,14 +1484,13 @@ $('emptyCart').onclick = emptyCart;
   };
 }
 
-
 /* =========================================================
-   13. APP STARTUP
+   16. APP STARTUP
    ========================================================= */
 
 function initializeApp() {
   bindEvents();
-     applyLanguage();
+  applyLanguage();
   ensureRequesterIdentity();
 
   updateCartBadge();
@@ -1473,83 +1504,71 @@ function initializeApp() {
       console.error('Could not load search rules:', error);
     });
 
-  // Fetch the latest catalog on every normal page startup.
-loadCatalog();
+  loadCatalog();
 
-// Refresh again only when restored from browser back-forward cache.
-window.addEventListener('pageshow', event => {
-  if (event.persisted && navigator.onLine) {
-    loadCatalog({ silent: true });
-  }
-});
+  window.addEventListener('pageshow', event => {
+    if (event.persisted && navigator.onLine) {
+      loadCatalog({ silent: true });
+    }
+  });
 
-  // Refresh the catalog every five minutes.
   startAutomaticRefresh();
 
-  // Refresh when the user returns to the website tab.
   document.addEventListener('visibilitychange', () => {
     if (!document.hidden && navigator.onLine) {
       loadCatalog({ silent: true });
     }
   });
 
-  // Retry when internet connection returns.
   window.addEventListener('online', () => {
     loadCatalog({ silent: true });
   });
 
-  // Register the existing service worker.
- 
-if ('serviceWorker' in navigator) {
-  let refreshing = false;
-  let swRegistration;
+  if ('serviceWorker' in navigator) {
+    let refreshing = false;
+    let swRegistration;
 
-  navigator.serviceWorker.addEventListener('controllerchange', () => {
-    if (refreshing) return;
+    navigator.serviceWorker.addEventListener('controllerchange', () => {
+      if (refreshing) return;
 
-    refreshing = true;
-    window.location.reload();
-  });
-
-  async function checkForUpdates() {
-    if (!navigator.onLine || !swRegistration) return;
-
-    try {
-      await swRegistration.update();
-    } catch (error) {
-      console.log('Update check failed:', error);
-    }
-  }
-
-  navigator.serviceWorker.register('./sw.js', {
-    updateViaCache: 'none'
-  })
-    .then(registration => {
-      swRegistration = registration;
-      checkForUpdates();
-
-      // Periodic check while the page is active.
-      setInterval(checkForUpdates, 60 * 1000);
-
-      // Check whenever the visitor returns.
-      window.addEventListener('pageshow', checkForUpdates);
-      window.addEventListener('focus', checkForUpdates);
-
-      // Check when the app becomes visible again.
-      document.addEventListener('visibilitychange', () => {
-        if (document.visibilityState === 'visible') {
-          checkForUpdates();
-        }
-      });
-
-      // Check after internet connection returns.
-      window.addEventListener('online', checkForUpdates);
-    })
-    .catch(error => {
-      console.error('Service worker registration failed:', error);
+      refreshing = true;
+      window.location.reload();
     });
-}
 
+    async function checkForUpdates() {
+      if (!navigator.onLine || !swRegistration) return;
+
+      try {
+        await swRegistration.update();
+      } catch (error) {
+        console.log('Update check failed:', error);
+      }
+    }
+
+    navigator.serviceWorker.register('./sw.js', {
+      updateViaCache: 'none'
+    })
+      .then(registration => {
+        swRegistration = registration;
+        checkForUpdates();
+
+        setInterval(checkForUpdates, 60 * 1000);
+
+        window.addEventListener('pageshow', checkForUpdates);
+        window.addEventListener('focus', checkForUpdates);
+
+        document.addEventListener('visibilitychange', () => {
+          if (document.visibilityState === 'visible') {
+            checkForUpdates();
+          }
+        });
+
+        window.addEventListener('online', checkForUpdates);
+      })
+      .catch(error => {
+        console.error('Service worker registration failed:', error);
+      });
+  }
 }
 
 initializeApp();
