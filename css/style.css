@@ -1149,3 +1149,26 @@ main {
   line-height: 1.25;
   border-radius: 8px;
 }
+/* LANGUAGE SELECTOR */
+.language-setting {
+  padding: 9px 12px;
+  border-top: 1px solid var(--line);
+}
+
+.language-setting label {
+  display: block;
+  margin-bottom: 5px;
+  font-size: 12px;
+  font-weight: 600;
+}
+
+.language-setting select {
+  width: 100%;
+  padding: 8px;
+  border: 1px solid var(--line);
+  border-radius: 7px;
+  background: var(--white);
+  color: var(--ink);
+  font: inherit;
+  font-size: 13px;
+}
