@@ -713,29 +713,6 @@ main {
 
 
 /* =========================================================
-   12. FLOATING SETTINGS BUTTON
-   ========================================================= */
-
-.settings-fab {
-  width: 39px;
-  height: 39px;
-
-  position: fixed;
-  right: 13px;
-  bottom: 82px;
-  z-index: 7;
-
-  border: 1px solid var(--line);
-  border-radius: 50%;
-
-  background: var(--white);
-  color: #697386;
-
-  box-shadow: var(--shadow);
-}
-
-
-/* =========================================================
    13. TOAST NOTIFICATION
    ========================================================= */
 
@@ -969,4 +946,109 @@ main {
 .quantity-subtotal strong {
   font-size: 19px;
 }
+/* =========================================================
+   MOBILE HEADER USER + OPTIONS MENU
+   ========================================================= */
 
+.header-actions {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+
+.user-header {
+  max-width: 105px;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+
+  padding: 9px 11px;
+  border: 1px solid #465064;
+  border-radius: 22px;
+
+  background: #202b3d;
+  color: #fff;
+
+  font-size: 12px;
+  font-weight: 700;
+  cursor: pointer;
+}
+
+.header-menu {
+  position: relative;
+}
+
+.header-menu-button {
+  width: 34px;
+  height: 40px;
+
+  border: none;
+  border-radius: 8px;
+
+  background: transparent;
+  color: #fff;
+
+  font-size: 27px;
+  cursor: pointer;
+}
+
+.header-menu-dropdown {
+  position: absolute;
+  top: calc(100% + 8px);
+  right: 0;
+  z-index: 30;
+
+  width: 190px;
+  padding: 6px;
+
+  border: 1px solid var(--line);
+  border-radius: 10px;
+
+  background: #fff;
+  box-shadow: var(--shadow);
+}
+
+.header-menu-dropdown button {
+  width: 100%;
+  padding: 12px;
+
+  border: none;
+  border-radius: 7px;
+
+  background: transparent;
+  color: var(--ink);
+
+  text-align: left;
+  font-size: 13px;
+  cursor: pointer;
+}
+
+.header-menu-dropdown button:active {
+  background: var(--bg);
+}
+
+@media (max-width: 480px) {
+  .topbar {
+    padding-left: 10px;
+    padding-right: 10px;
+  }
+
+  .header-actions {
+    gap: 5px;
+  }
+
+  .user-header {
+    max-width: 85px;
+    padding: 8px 9px;
+    font-size: 11px;
+  }
+
+  .cart-top {
+    padding: 8px 10px;
+    font-size: 12px;
+  }
+
+  .header-menu-button {
+    width: 27px;
+  }
+}
