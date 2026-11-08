@@ -488,11 +488,15 @@ function renderRefine(result) {
       'font:inherit;font-size:.85em;cursor:pointer;opacity:.85';
 
     button.onclick = () => {
-      const input = $('searchInput');
-      input.value = (input.value.trim() + ' ' + chip.add).trim();
-      renderProducts();
-      input.focus();
-    };
+  const input = $('searchInput');
+  input.value = (input.value.trim() + ' ' + chip.add).trim();
+
+  window.scrollTo({ top: 0, behavior: 'smooth' });
+
+  previousSearchQuery = input.value.trim();
+  renderProducts();
+  input.focus();
+};
 
     box.appendChild(button);
   });
@@ -1108,10 +1112,22 @@ function bindEvents() {
       menuButton.setAttribute('aria-expanded', 'false');
     }
   });
-  $('searchInput').addEventListener('input', () => {
-    clearTimeout(searchTimer);
-    searchTimer = setTimeout(renderProducts, 120);
-  });
+  let previousSearchQuery = '';
+
+$('searchInput').addEventListener('input', () => {
+  clearTimeout(searchTimer);
+
+  const query = $('searchInput').value.trim();
+
+  // Scroll to the top when a new search begins
+  if (query && !previousSearchQuery) {
+    window.scrollTo({ top: 0, behavior: 'smooth' });
+  }
+
+  previousSearchQuery = query;
+
+  searchTimer = setTimeout(renderProducts, 120);
+});
 
   $('clearSearch').onclick = () => {
     $('searchInput').value = '';
