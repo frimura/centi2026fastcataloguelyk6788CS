@@ -1152,6 +1152,10 @@ async function sendOrder() {
 
   order.customerType = customerType;
 
+   await navigator.clipboard.writeText(order.text).catch(error => {
+  console.warn('Order clipboard copy failed:', error);
+});
+   
   if (!confirm(
     t('confirmTelegram') + '\n\n' +
     t('destination') + ': TELEGRAM\n\n' +
@@ -1227,6 +1231,9 @@ async function sendToPC() {
   }
 
   order.customerType = customerType;
+   await navigator.clipboard.writeText(order.text).catch(error => {
+  console.warn('Order clipboard copy failed:', error);
+});
 
   const url = (settings.scriptUrl || '').trim();
   const pin = (settings.pin || '').trim();
