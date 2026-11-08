@@ -1101,3 +1101,51 @@ main {
   font-size: 10px;
   line-height: 1.4;
 }
+/* Compact two-column cart routing */
+.cart-routing-grid {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) minmax(0, 1fr);
+  gap: 8px;
+  margin-bottom: 9px;
+}
+
+.routing-field {
+  min-width: 0;
+}
+
+.routing-field .destination-label {
+  display: block;
+  margin: 0 0 4px;
+  font-size: 11px;
+  font-weight: 650;
+}
+
+.routing-field .destination-select {
+  width: 100%;
+  min-width: 0;
+  height: 40px;
+  padding: 6px;
+  font-size: 12px;
+  border: 1px solid var(--line);
+  border-radius: 8px;
+  background: var(--white);
+  color: var(--ink);
+}
+
+.send-buttons-grid {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) minmax(0, 1fr);
+  gap: 8px;
+  margin-bottom: 8px;
+}
+
+.send-buttons-grid button {
+  width: 100%;
+  min-width: 0;
+  min-height: 42px;
+  margin: 0;
+  padding: 8px 5px;
+  font-size: 12px;
+  line-height: 1.25;
+  border-radius: 8px;
+}
