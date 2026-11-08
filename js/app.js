@@ -119,23 +119,14 @@ function showRequesterPrompt() {
 }
 
 function updateRequesterBadge() {
-  let badge = $('requesterIdentityBadge');
+  const badge = $('requesterIdentityBadge');
 
-  if (!badge) {
-    badge = document.createElement('button');
-    badge.id = 'requesterIdentityBadge';
-    badge.type = 'button';
+  if (!badge) return;
 
-    badge.style.cssText = `
-      position:fixed;right:14px;bottom:14px;z-index:99990;
-      padding:9px 13px;border:1px solid #999;
-      border-radius:999px;background:#222;color:#fff;
-      font:600 12px Arial,sans-serif;cursor:pointer;
-    `;
-
-    badge.addEventListener('click', showRequesterPrompt);
-    document.body.appendChild(badge);
-  }
+  badge.textContent = requesterName || 'Select name';
+  badge.title = 'Change user';
+  badge.onclick = showRequesterPrompt;
+}
 
   badge.textContent = `User: ${requesterName || 'Select name'} · Change`;
 }
@@ -1098,6 +1089,25 @@ function showToast(message) {
    ========================================================= */
 
 function bindEvents() {
+     // Header three-dot menu
+  const menuButton = $('headerMenuButton');
+  const menu = $('headerMenu');
+
+  menuButton.onclick = (event) => {
+    event.stopPropagation();
+
+    const isOpen = !menu.classList.contains('hidden');
+
+    menu.classList.toggle('hidden', isOpen);
+    menuButton.setAttribute('aria-expanded', String(!isOpen));
+  };
+
+  document.addEventListener('click', (event) => {
+    if (!event.target.closest('.header-menu')) {
+      menu.classList.add('hidden');
+      menuButton.setAttribute('aria-expanded', 'false');
+    }
+  });
   $('searchInput').addEventListener('input', () => {
     clearTimeout(searchTimer);
     searchTimer = setTimeout(renderProducts, 120);
@@ -1165,7 +1175,11 @@ updatePCButton();
 $('copyOrder').onclick = copyOrder;
 $('emptyCart').onclick = emptyCart;
 
-  $('settingsButton').onclick = openSettings;
+  $('settingsButton').onclick = () => {
+  $('headerMenu').classList.add('hidden');
+  $('headerMenuButton').setAttribute('aria-expanded', 'false');
+  openSettings();
+};
   $('closeSettings').onclick = closeSettings;
   $('settingsOverlay').onclick = closeSettings;
 
