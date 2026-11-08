@@ -827,7 +827,8 @@ function getListenerName(listenerId) {
     'CENTI-PC': 'PC DEPAN',
     'CENTI-CS-1': 'BUDI',
     'CENTI-CS-2': 'RAUF',
-     'CENTI-SOLO-MEGA': 'SOLO MEGABOOK'
+   'CENTI-SOLO-MEGA': 'SOLO MEGABOOK',
+     'FRISKY-PC': 'FRISKY-NITRO'
   };
 
   return names[listenerId] || 'Unknown PC';
