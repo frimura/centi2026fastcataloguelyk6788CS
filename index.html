@@ -117,36 +117,45 @@
   <strong id="cartTotal">Rp0</strong>
 </div>
 
-<label for="listenerDestination" class="destination-label">
-  Send order to
-</label>
+<div class="cart-routing-grid">
+  <div class="routing-field">
+    <label for="listenerDestination" class="destination-label">
+      Destination PC
+    </label>
 
-<select id="listenerDestination" class="destination-select">
-  <option value="">Select destination PC</option>
-  <option value="CENTI-PC">PC DEPAN</option>
-  <option value="CENTI-CS-1">BUDI</option>
-  <option value="CENTI-CS-2">RAUF</option>
-  <option value="CENTI-SOLO-MEGA">SOLO MEGABOOK</option>
-  <option value="FRISKY-PC">FRISKY PC</option>
+    <select id="listenerDestination" class="destination-select">
+      <option value="">Select PC</option>
+      <option value="CENTI-PC">PC DEPAN</option>
+      <option value="CENTI-CS-1">BUDI</option>
+      <option value="CENTI-CS-2">RAUF</option>
+      <option value="CENTI-SOLO-MEGA">SOLO MEGABOOK</option>
+      <option value="FRISKY-PC">FRISKY PC</option>
+    </select>
+  </div>
 
-</select>
-<label for="customerType" class="destination-label">
-  Customer type
-</label>
+  <div class="routing-field">
+    <label for="customerType" class="destination-label">
+      Customer type
+    </label>
 
-<select id="customerType" class="destination-select">
-  <option value="">Select customer type</option>
-  <option value="CENTI - 3D Printing">3D Printing</option>
-  <option value="CENTI - Offline Store">Offline Store</option>
-  <option value="CENTI - WA Channel">WA Channel</option>
-</select>
-      
+    <select id="customerType" class="destination-select">
+      <option value="">Select customer</option>
+      <option value="CENTI - 3D Printing">3D Printing</option>
+      <option value="CENTI - Offline Store">Offline Store</option>
+      <option value="CENTI - WA Channel">WA Channel</option>
+    </select>
+  </div>
+</div>
+
+<div class="send-buttons-grid">
   <button id="sendToPC" class="secondary-button">
-  Send order to PC
-</button>
-      <button id="sendOrder" class="primary-button">
-  Send order to Telegram
-</button>
+    Send to PC
+  </button>
+
+  <button id="sendOrder" class="primary-button">
+    Send to Telegram
+  </button>
+</div>
 <button id="copyOrder" class="secondary-button">Copy order text</button>
 <button id="emptyCart" class="empty-cart-button">Empty cart</button>
      <p class="footnote">
