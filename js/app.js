@@ -1157,11 +1157,10 @@ function renderSavedOrders() {
                 data-delete-saved="${esc(order.id)}">
           Delete
         </button>
-
-        <button type="button"
+<button type="button"
         class="secondary-button"
-        data-print-saved="${esc(order.id)}">
-  Print Invoice
+        data-copy-invoice="${esc(order.id)}">
+  Copy Invoice
 </button>
       </div>
 
@@ -1175,33 +1174,10 @@ function renderSavedOrders() {
   host.querySelectorAll('[data-delete-saved]').forEach(button => {
     button.onclick = () => deleteSavedOrder(button.dataset.deleteSaved);
   });
-
-   host.querySelectorAll('[data-print-saved]').forEach(button => {
-  button.onclick = () => printSavedOrder(button.dataset.printSaved);
+host.querySelectorAll('[data-copy-invoice]').forEach(button => {
+  button.onclick = () => copySavedInvoice(button.dataset.copyInvoice);
 });
 }
-function printSavedOrder(id) {
-  const order = savedOrders.find(item => item.id === id);
-
-  if (!order) return;
-
-  const invoiceNumber =
-    order.invoiceNumber ||
-    'INV-' + order.id.replace('SAVED-', '');
-
-  const invoiceDate = new Date(order.createdAt)
-    .toLocaleDateString('id-ID', {
-      day: '2-digit',
-      month: 'long',
-      year: 'numeric'
-    });
-
-  const popup = window.open('', '_blank', 'width=800,height=900');
-
-  if (!popup) {
-    showToast('Please allow popups to print invoices');
-    return;
-  }
 
   const rows = order.items.map(item => `
     <tr>
@@ -1359,6 +1335,53 @@ function printSavedOrder(id) {
     popup.focus();
     popup.print();
   };
+}
+
+async function copySavedInvoice(id) {
+  const order = savedOrders.find(item => item.id === id);
+  if (!order) return;
+
+  const invoiceNumber =
+    order.invoiceNumber ||
+    'INV-' + order.id.replace('SAVED-', '');
+
+  const invoiceDate = new Date(order.createdAt)
+    .toLocaleDateString('id-ID', {
+      day: '2-digit',
+      month: 'long',
+      year: 'numeric'
+    });
+
+  const items = order.items.map((item, index) => [
+    `${index + 1}. ${item.name}`,
+    `   SKU: ${item.sku}`,
+    `   Qty: ${item.qty}`,
+    `   Unit Price: ${money(item.price)}`,
+    `   Subtotal: ${money(item.price * item.qty)}`
+  ].join('\n')).join('\n\n');
+
+  const invoiceText = [
+    'CENTI STORE',
+    `Invoice: ${invoiceNumber}`,
+    `Date: ${invoiceDate}`,
+    '',
+    'Customer Info:',
+    order.name,
+    '',
+    'ITEMS',
+    items,
+    '',
+    `GRAND TOTAL: ${money(order.total)}`,
+    '',
+    'Thank you for your order!'
+  ].join('\n');
+
+  try {
+    await navigator.clipboard.writeText(invoiceText);
+    showToast('Invoice copied. Paste with Ctrl + V');
+  } catch (error) {
+    showToast('Unable to copy invoice. Check clipboard permissions.');
+  }
 }
 function loadSavedOrder(id) {
   const order = savedOrders.find(item => item.id === id);
