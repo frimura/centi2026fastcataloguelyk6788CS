@@ -840,6 +840,7 @@ function openQuantitySelector(sku) {
     product.short || product.name || product.sku;
 
   $('quantityProductSku').textContent = `${t('sku')}: ${product.sku}`;
+   showWooCommerceStock(product.sku);
   $('quantityProductPrice').textContent = money(product.price);
   $('productQuantity').value = 1;
 
@@ -898,6 +899,60 @@ async function checkWooCommerceStock(sku) {
     throw new Error('Apps Script URL is not configured.');
   }
 
+function showWooCommerceStock(sku) {
+  let info = $('wooCommerceStockInfo');
+
+  if (!info) {
+    info = document.createElement('div');
+    info.id = 'wooCommerceStockInfo';
+
+    info.style.cssText = `
+      margin: 10px 0;
+      padding: 10px 12px;
+      border-radius: 8px;
+      background: #f1f5f9;
+      color: #334155;
+      font-size: 14px;
+    `;
+
+    $('quantityProductSku').insertAdjacentElement('afterend', info);
+  }
+
+  info.textContent = currentLanguage === 'id'
+    ? 'Memeriksa estimasi stok...'
+    : 'Checking estimated stock...';
+
+  checkWooCommerceStock(sku)
+    .then(stock => {
+      if (!selectedProduct || selectedProduct.sku !== sku) return;
+
+      if (stock.manage_stock && stock.quantity !== null) {
+        info.textContent = currentLanguage === 'id'
+          ? `Estimasi stok WooCommerce: ${stock.quantity} unit`
+          : `Estimated WooCommerce stock: ${stock.quantity} units`;
+
+      } else if (stock.stock_status === 'outofstock') {
+        info.textContent = currentLanguage === 'id'
+          ? 'Status stok WooCommerce: Habis'
+          : 'WooCommerce stock status: Out of stock';
+
+      } else {
+        info.textContent = currentLanguage === 'id'
+          ? 'Status stok: Tersedia (jumlah tidak dilacak)'
+          : 'Stock status: In stock (quantity not tracked)';
+      }
+    })
+    .catch(error => {
+      console.warn('Stock lookup failed:', error);
+
+      if (!selectedProduct || selectedProduct.sku !== sku) return;
+
+      info.textContent = currentLanguage === 'id'
+        ? 'Estimasi stok tidak tersedia'
+        : 'Stock estimate unavailable';
+    });
+}
+
   const separator = settings.scriptUrl.includes('?') ? '&' : '?';
 
   const url =
@@ -918,10 +973,10 @@ async function checkWooCommerceStock(sku) {
 
   return result;
 }
-async function confirmAddToCart() {
-  if (!selectedProduct) return;
 
-  const button = $('confirmAddToCart');
+
+function confirmAddToCart() {
+  if (!selectedProduct) return;
 
   const quantity = Math.max(
     1,
@@ -929,58 +984,13 @@ async function confirmAddToCart() {
   );
 
   const sku = selectedProduct.sku;
-  const currentCartQty = cart[sku]?.qty || 0;
-  const totalRequested = currentCartQty + quantity;
 
-  button.disabled = true;
+  addToCart(sku, quantity);
+  closeQuantitySelector();
 
-  try {
-    const stock = await checkWooCommerceStock(sku);
-
-    if (stock.stock_status === 'outofstock') {
-      alert(
-        currentLanguage === 'id'
-          ? 'Produk sedang habis di WooCommerce.'
-          : 'This product is out of stock on WooCommerce.'
-      );
-      return;
-    }
-
-    if (stock.manage_stock) {
-      const available = Number(stock.quantity);
-
-      if (!Number.isFinite(available)) {
-        throw new Error('WooCommerce returned an invalid stock quantity.');
-      }
-
-      if (totalRequested > available) {
-        alert(
-          currentLanguage === 'id'
-            ? `Stok tersedia: ${available}\nJumlah di keranjang: ${currentCartQty}\nJumlah yang ingin ditambahkan: ${quantity}`
-            : `Available stock: ${available}\nAlready in cart: ${currentCartQty}\nAdditional quantity requested: ${quantity}`
-        );
-        return;
-      }
-    }
-
-    addToCart(sku, quantity);
-    closeQuantitySelector();
-
-    showToast(`${t('added')} ${quantity} × ${sku} ${t('toCart')}`);
-
-  } catch (error) {
-    console.error('WooCommerce stock check failed:', error);
-
-    alert(
-      currentLanguage === 'id'
-        ? 'Gagal memeriksa stok. Produk belum ditambahkan.\n' + error.message
-        : 'Could not verify stock. Product was not added.\n' + error.message
-    );
-
-  } finally {
-    button.disabled = false;
-  }
+  showToast(`${t('added')} ${quantity} × ${sku} ${t('toCart')}`);
 }
+
 
 /* =========================================================
    12. SHOPPING CART
