@@ -1075,7 +1075,7 @@ function saveCurrentOrder() {
 
   if (!items.length) return;
 
-  const name = prompt('Enter a name for this order:');
+  const name = prompt('Masukkan nama / Nomor Pelanggan');
 
   if (name === null) return;
 
