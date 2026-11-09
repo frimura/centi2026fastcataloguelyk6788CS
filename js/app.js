@@ -860,6 +860,25 @@ function openQuantitySelector(sku) {
 
   $('quantityProductSku').textContent = `${t('sku')}: ${product.sku}`;
   $('quantityProductPrice').textContent = money(product.price);
+   let modalStock = $('quantityModalStock');
+
+if (!modalStock) {
+  modalStock = document.createElement('div');
+  modalStock.id = 'quantityModalStock';
+  modalStock.style.cssText =
+    'margin-top:6px;font-size:13px;color:#64748b;';
+
+  $('quantityProductPrice').insertAdjacentElement(
+    'afterend',
+    modalStock
+  );
+}
+
+modalStock.textContent =
+  wooCommerceStockCache.get(sku) ||
+  (currentLanguage === 'id'
+    ? 'Memeriksa estimasi stok...'
+    : 'Checking stock estimate...');
   $('productQuantity').value = 1;
 
   const image = $('quantityImage');
@@ -964,6 +983,13 @@ function showWooCommerceStock(sku) {
 }
 function updateProductCardStock(sku, message) {
   document.querySelectorAll('[data-stock-for]').forEach(slot => {
+       if (
+    selectedProduct &&
+    selectedProduct.sku === sku &&
+    $('quantityModalStock')
+  ) {
+    $('quantityModalStock').textContent = message;
+  }
     if (slot.dataset.stockFor === sku) {
       slot.textContent = message;
     }
