@@ -114,10 +114,11 @@
   <nav class="bottom-nav">
     <button class="nav-active" id="navCatalog"><span>▦</span>Catalog</button>
     <button id="navCart"><span>🛒</span>Cart <b id="navCartCount">0</b></button>
-  </nav><button id="savedOrdersTop" class="cart-top" type="button">
-  Saved Orders
-</button>
+     <button id="savedOrdersTop" type="button">
+    <span>▤</span>Saved Orders
+  </button>
 
+  </nav>
   <div id="cartOverlay" class="overlay hidden"></div>
   <aside id="cartPanel" class="cart-panel" aria-label="Shopping cart" aria-hidden="true">
     <div class="panel-head"><div><strong>Your order</strong><small id="cartSubtitle">0 different products</small></div><button id="closeCart" class="icon-button" aria-label="Close cart">×</button></div>
@@ -157,9 +158,16 @@
     </select>
   </div>
 </div>
-<button id="saveCartOrder" class="secondary-button" type="button">
-  Save Order
-</button>
+<div class="copy-save-row">
+  <button id="copyOrder" class="secondary-button" type="button">
+    Copy order text
+  </button>
+
+  <button id="saveCartOrder" class="secondary-button" type="button">
+    Save Order
+  </button>
+</div>
+
 <div class="send-buttons-grid">
   <button id="sendToPC" class="secondary-button">
     Send to PC
@@ -169,10 +177,6 @@
     Send to Telegram
   </button>
 </div>
-<button id="copyOrder" class="secondary-button">Copy order text</button>
-      <button id="saveCartOrder" class="secondary-button" type="button">
-        Save Order
-    </button>
 </div>
 <button id="emptyCart" class="empty-cart-button">Empty cart</button>
      <p class="footnote">
