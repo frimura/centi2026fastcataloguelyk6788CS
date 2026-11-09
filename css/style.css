@@ -357,15 +357,17 @@ main {
   left: 0;
   z-index: 6;
 
-  display: flex;
-  justify-content: center;
+  display: grid;
+grid-template-columns: repeat(3, minmax(0, 1fr));
 
   border-top: 1px solid var(--line);
   background: var(--white);
 }
 
 .bottom-nav button {
-  min-width: 110px;
+ min-width: 0;
+width: 100%;
+padding: 0 2px;
 
   display: flex;
   flex-direction: column;
@@ -1243,4 +1245,10 @@ main {
 
 .copy-save-row button {
     width: 100%;
+}
+.copy-save-row button {
+    min-height: 42px;
+    margin-top: 0;
+    padding: 8px 5px;
+    font-size: 12px;
 }
