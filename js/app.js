@@ -291,6 +291,7 @@ let searchTimer;
 let refreshTimer = null;
 let catalogRequest = null;
 let selectedProduct = null;
+const wooCommerceStockCache = new Map();
 let requesterName = readStorage(CONFIG.identityKey, '');
 let previousSearchQuery = '';
 
@@ -805,7 +806,13 @@ function renderProducts() {
 
         <div class="product-price">${money(product.price)}</div>
 
-        <button class="add-button" data-add="${esc(product.sku)}">
+<div
+  class="product-stock-estimate"
+  data-stock-for="${esc(product.sku)}"
+  style="margin:4px 0 8px;font-size:13px;color:#64748b;"
+></div>
+
+<button class="add-button" data-add="${esc(product.sku)}">
           ＋ ${t('addToCart')}
         </button>
       </div>
@@ -819,10 +826,22 @@ function renderProducts() {
   }
 
   host.querySelectorAll('[data-add]').forEach(button => {
-    button.addEventListener('click', () => {
-      openQuantitySelector(button.dataset.add);
-    });
+  button.addEventListener('click', () => {
+    const sku = button.dataset.add;
+
+    fetchAndDisplayProductStock(sku);
+    openQuantitySelector(sku);
   });
+});
+
+// Restore previously fetched stock after catalogue re-render.
+host.querySelectorAll('[data-stock-for]').forEach(slot => {
+  const cached = wooCommerceStockCache.get(slot.dataset.stockFor);
+
+  if (cached) {
+    slot.textContent = cached;
+  }
+});
 }
 
 /* =========================================================
@@ -840,7 +859,6 @@ function openQuantitySelector(sku) {
     product.short || product.name || product.sku;
 
   $('quantityProductSku').textContent = `${t('sku')}: ${product.sku}`;
-   showWooCommerceStock(product.sku);
   $('quantityProductPrice').textContent = money(product.price);
   $('productQuantity').value = 1;
 
@@ -943,7 +961,71 @@ function showWooCommerceStock(sku) {
   info.textContent = currentLanguage === 'id'
     ? 'Memeriksa estimasi stok...'
     : 'Checking estimated stock...';
+function updateProductCardStock(sku, message) {
+  document.querySelectorAll('[data-stock-for]').forEach(slot => {
+    if (slot.dataset.stockFor === sku) {
+      slot.textContent = message;
+    }
+  });
+}
 
+function fetchAndDisplayProductStock(sku) {
+  // Use cached result if available.
+  if (wooCommerceStockCache.has(sku)) {
+    updateProductCardStock(sku, wooCommerceStockCache.get(sku));
+    return;
+  }
+
+  const loadingText = currentLanguage === 'id'
+    ? 'Memeriksa estimasi stok...'
+    : 'Checking stock estimate...';
+
+  updateProductCardStock(sku, loadingText);
+
+  // Prevent duplicate requests for the same SKU.
+  wooCommerceStockCache.set(sku, loadingText);
+
+  checkWooCommerceStock(sku)
+    .then(stock => {
+      let message;
+
+      if (stock.stock_status === 'outofstock') {
+        message = currentLanguage === 'id'
+          ? 'Estimasi stok: Habis'
+          : 'Estimated stock: Out of stock';
+
+      } else if (
+        stock.manage_stock &&
+        stock.quantity !== null &&
+        stock.quantity !== undefined
+      ) {
+        message = currentLanguage === 'id'
+          ? `Estimasi stok: ${stock.quantity} unit`
+          : `Estimated stock: ${stock.quantity} units`;
+
+      } else {
+        message = currentLanguage === 'id'
+          ? 'Stok tersedia (jumlah tidak dilacak)'
+          : 'In stock (quantity not tracked)';
+      }
+
+      wooCommerceStockCache.set(sku, message);
+      updateProductCardStock(sku, message);
+    })
+    .catch(error => {
+      console.warn('Product card stock lookup failed:', sku, error);
+
+      // Allow another attempt on the next click.
+      wooCommerceStockCache.delete(sku);
+
+      updateProductCardStock(
+        sku,
+        currentLanguage === 'id'
+          ? 'Estimasi stok tidak tersedia'
+          : 'Stock estimate unavailable'
+      );
+    });
+}
   checkWooCommerceStock(sku)
     .then(stock => {
       if (!selectedProduct || selectedProduct.sku !== sku) return;
