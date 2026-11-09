@@ -159,7 +159,9 @@
     </select>
   </div>
 </div>
-
+<button id="saveCartOrder" class="secondary-button" type="button">
+  Save Order
+</button>
 <div class="send-buttons-grid">
   <button id="sendToPC" class="secondary-button">
     Send to PC
@@ -176,6 +178,29 @@
 </p>
     </div>
   </aside>
+  <!-- SAVED ORDERS PANEL -->
+<div id="savedOrdersOverlay" class="overlay hidden"></div>
+
+<aside id="savedOrdersPanel" class="cart-panel"
+       aria-label="Saved orders" aria-hidden="true">
+
+  <div class="panel-head">
+    <div>
+      <strong>Saved Orders</strong>
+      <small id="savedOrdersSubtitle">0 saved orders</small>
+    </div>
+    <button id="closeSavedOrders" class="icon-button"
+            aria-label="Close saved orders">×</button>
+  </div>
+
+  <div id="savedOrdersList" class="cart-items">
+    <div class="empty">
+      <strong>No saved orders</strong>
+      <span>Save an order from your cart.</span>
+    </div>
+  </div>
+
+</aside>
   <div id="settingsOverlay" class="overlay hidden"></div>
   <section id="settingsPanel" class="settings-panel hidden">
     <div class="panel-head"><strong>Connection settings</strong><button id="closeSettings" class="icon-button">×</button></div>
