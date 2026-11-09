@@ -1442,3 +1442,13 @@ padding: 0 2px;
     min-height: 260px;
   }
 }
+.bottom-nav button .nav-label {
+  font-size: 11px;
+  font-weight: 650;
+  line-height: 1;
+}
+
+.bottom-nav button .nav-icon {
+  font-size: 19px;
+  line-height: 1;
+}
