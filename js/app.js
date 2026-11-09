@@ -961,6 +961,7 @@ function showWooCommerceStock(sku) {
   info.textContent = currentLanguage === 'id'
     ? 'Memeriksa estimasi stok...'
     : 'Checking estimated stock...';
+}
 function updateProductCardStock(sku, message) {
   document.querySelectorAll('[data-stock-for]').forEach(slot => {
     if (slot.dataset.stockFor === sku) {
@@ -1024,36 +1025,6 @@ function fetchAndDisplayProductStock(sku) {
           ? 'Estimasi stok tidak tersedia'
           : 'Stock estimate unavailable'
       );
-    });
-}
-  checkWooCommerceStock(sku)
-    .then(stock => {
-      if (!selectedProduct || selectedProduct.sku !== sku) return;
-
-      if (stock.manage_stock && stock.quantity !== null) {
-        info.textContent = currentLanguage === 'id'
-          ? `Estimasi stok WooCommerce: ${stock.quantity} unit`
-          : `Estimated WooCommerce stock: ${stock.quantity} units`;
-
-      } else if (stock.stock_status === 'outofstock') {
-        info.textContent = currentLanguage === 'id'
-          ? 'Status stok WooCommerce: Habis'
-          : 'WooCommerce stock status: Out of stock';
-
-      } else {
-        info.textContent = currentLanguage === 'id'
-          ? 'Status stok: Tersedia (jumlah tidak dilacak)'
-          : 'Stock status: In stock (quantity not tracked)';
-      }
-    })
-    .catch(error => {
-      console.warn('Stock lookup failed:', error);
-
-      if (!selectedProduct || selectedProduct.sku !== sku) return;
-
-      info.textContent = currentLanguage === 'id'
-        ? 'Estimasi stok tidak tersedia'
-        : 'Stock estimate unavailable';
     });
 }
 
