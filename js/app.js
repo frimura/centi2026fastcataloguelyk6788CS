@@ -1329,7 +1329,7 @@ async function copySavedInvoice(id) {
   ctx.fillStyle = '#777777';
   ctx.font = '18px Arial';
   ctx.textAlign = 'center';
-  ctx.fillText('Thank you for your order!', width / 2, y);
+  ctx.fillText('Centi STORE', width / 2, y);
 
   try {
     const blob = await new Promise(resolve =>
