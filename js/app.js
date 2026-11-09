@@ -17,7 +17,7 @@ savedOrdersKey: 'centi_catalog_saved_orders_v1',
   refreshInterval: 5 * 60 * 1000
 };
 const SUPABASE_URL = 'https://rtvxegwgcjoxcmmojhqk.supabase.co';
-const SUPABASE_PUBLIC_KEY = 'YOUR_PUBLISHABLE_KEY';
+const SUPABASE_PUBLIC_KEY = 'sb_publishable_but9O4L_QdZiTDU01hVn7w_UJ3VAYa6';
 /* =========================================================
    2. LANGUAGE CONFIGURATION
    ========================================================= */
