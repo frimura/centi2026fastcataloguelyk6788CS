@@ -237,6 +237,41 @@
   </div>
 
 </aside>
+  <!-- IMPORT ORDER PANEL -->
+<div id="importOrderOverlay" class="overlay hidden"></div>
+
+<aside id="importOrderPanel" class="cart-panel import-panel"
+       aria-label="Import order" aria-hidden="true">
+
+  <div class="panel-head">
+    <div>
+      <strong>Import Order</strong>
+      <small>Paste your copied order text below</small>
+    </div>
+
+    <button id="closeImportOrder" class="icon-button"
+            type="button" aria-label="Close">×</button>
+  </div>
+
+  <div class="import-order-content">
+    <label for="importOrderText">Order text</label>
+
+    <textarea
+      id="importOrderText"
+      placeholder="Paste your copied order here..."
+      spellcheck="false"
+    ></textarea>
+
+    <button id="pasteImportOrder" class="secondary-button" type="button">
+      Paste from Clipboard
+    </button>
+
+    <button id="confirmImportOrder" class="primary-button" type="button">
+      Import to Cart
+    </button>
+  </div>
+
+</aside>
   <div id="settingsOverlay" class="overlay hidden"></div>
   <section id="settingsPanel" class="settings-panel hidden">
     <div class="panel-head"><strong>Connection settings</strong><button id="closeSettings" class="icon-button">×</button></div>
