@@ -894,10 +894,32 @@ function updateQuantitySubtotal() {
     money(selectedProduct.price * quantity);
 }
 
+
 async function checkWooCommerceStock(sku) {
   if (!settings.scriptUrl) {
     throw new Error('Apps Script URL is not configured.');
   }
+
+  const separator = settings.scriptUrl.includes('?') ? '&' : '?';
+
+  const url =
+    settings.scriptUrl +
+    separator +
+    'action=stock&sku=' +
+    encodeURIComponent(sku);
+
+  const result = await jsonp(url, 30000);
+
+  if (!result || !result.ok) {
+    throw new Error(result?.error || 'Stock lookup failed.');
+  }
+
+  if (result.stock_status === 'not_found') {
+    throw new Error('SKU not found in WooCommerce.');
+  }
+
+  return result;
+}
 
 function showWooCommerceStock(sku) {
   let info = $('wooCommerceStockInfo');
@@ -952,28 +974,6 @@ function showWooCommerceStock(sku) {
         : 'Stock estimate unavailable';
     });
 }
-
-  const separator = settings.scriptUrl.includes('?') ? '&' : '?';
-
-  const url =
-    settings.scriptUrl +
-    separator +
-    'action=stock&sku=' +
-    encodeURIComponent(sku);
-
-  const result = await jsonp(url, 30000);
-
-  if (!result || !result.ok) {
-    throw new Error(result?.error || 'Stock lookup failed.');
-  }
-
-  if (result.stock_status === 'not_found') {
-    throw new Error('SKU not found in WooCommerce.');
-  }
-
-  return result;
-}
-
 
 function confirmAddToCart() {
   if (!selectedProduct) return;
