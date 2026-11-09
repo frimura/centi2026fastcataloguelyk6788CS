@@ -1193,35 +1193,153 @@ async function copySavedInvoice(id) {
       year: 'numeric'
     });
 
-  const items = order.items.map((item, index) => [
-    `${index + 1}. ${item.name}`,
-    `   SKU: ${item.sku}`,
-    `   Qty: ${item.qty}`,
-    `   Unit Price: ${money(item.price)}`,
-    `   Subtotal: ${money(item.price * item.qty)}`
-  ].join('\n')).join('\n\n');
+  const canvas = document.createElement('canvas');
+  const ctx = canvas.getContext('2d');
 
-  const invoiceText = [
-    'CENTI STORE',
-    `Invoice: ${invoiceNumber}`,
-    `Date: ${invoiceDate}`,
-    '',
-    'Customer Info:',
-    order.name,
-    '',
-    'ITEMS',
-    items,
-    '',
-    `GRAND TOTAL: ${money(order.total)}`,
-    '',
-    'Thank you for your order!'
-  ].join('\n');
+  const width = 900;
+  const padding = 65;
+  const rowHeight = 78;
+  const headerHeight = 310;
+  const footerHeight = 190;
+  const height = headerHeight + order.items.length * rowHeight + footerHeight;
+
+  canvas.width = width;
+  canvas.height = height;
+
+  // Background
+  ctx.fillStyle = '#ffffff';
+  ctx.fillRect(0, 0, width, height);
+
+  // Header
+  ctx.fillStyle = '#171717';
+  ctx.fillRect(0, 0, width, 220);
+
+  ctx.fillStyle = '#ffffff';
+  ctx.font = 'bold 48px Arial';
+  ctx.fillText('CENTI STORE', padding, 90);
+
+  ctx.font = '24px Arial';
+  ctx.fillStyle = '#d1d5db';
+  ctx.fillText('INVOICE', padding, 145);
+
+  ctx.font = '20px Arial';
+  ctx.fillText(`Invoice: ${invoiceNumber}`, padding, 185);
+
+  ctx.textAlign = 'right';
+  ctx.fillText(invoiceDate, width - padding, 185);
+  ctx.textAlign = 'left';
+
+  // Customer
+  let y = 275;
+
+  ctx.fillStyle = '#777777';
+  ctx.font = 'bold 18px Arial';
+  ctx.fillText('CUSTOMER', padding, y);
+
+  y += 38;
+  ctx.fillStyle = '#171717';
+  ctx.font = 'bold 28px Arial';
+  ctx.fillText(String(order.name), padding, y);
+
+  // Items header
+  y += 65;
+  ctx.fillStyle = '#f3f4f6';
+  ctx.fillRect(padding, y - 30, width - padding * 2, 48);
+
+  ctx.fillStyle = '#555555';
+  ctx.font = 'bold 16px Arial';
+  ctx.fillText('ITEM', padding + 12, y);
+  ctx.textAlign = 'right';
+  ctx.fillText('QTY', 560, y);
+  ctx.fillText('PRICE', 710, y);
+  ctx.fillText('SUBTOTAL', width - padding - 12, y);
+  ctx.textAlign = 'left';
+
+  y += 48;
+
+  // Items
+  order.items.forEach((item, index) => {
+    const subtotal = Number(item.price) * Number(item.qty);
+
+    ctx.strokeStyle = '#e5e7eb';
+    ctx.beginPath();
+    ctx.moveTo(padding, y);
+    ctx.lineTo(width - padding, y);
+    ctx.stroke();
+
+    y += 28;
+
+    ctx.fillStyle = '#171717';
+    ctx.font = 'bold 17px Arial';
+
+    const productName = String(item.name || '');
+    ctx.fillText(
+      productName.length > 34
+        ? productName.slice(0, 31) + '...'
+        : productName,
+      padding + 12,
+      y
+    );
+
+    ctx.font = '14px Arial';
+    ctx.fillStyle = '#777777';
+    ctx.fillText(`SKU: ${item.sku || '-'}`, padding + 12, y + 23);
+
+    ctx.fillStyle = '#333333';
+    ctx.font = '16px Arial';
+    ctx.textAlign = 'right';
+    ctx.fillText(String(item.qty), 560, y);
+    ctx.fillText(money(item.price), 710, y);
+    ctx.fillText(money(subtotal), width - padding - 12, y);
+    ctx.textAlign = 'left';
+
+    y += rowHeight - 28;
+  });
+
+  // Grand total
+  y += 25;
+
+  ctx.strokeStyle = '#171717';
+  ctx.lineWidth = 2;
+  ctx.beginPath();
+  ctx.moveTo(padding, y);
+  ctx.lineTo(width - padding, y);
+  ctx.stroke();
+
+  y += 65;
+
+  ctx.fillStyle = '#777777';
+  ctx.font = 'bold 20px Arial';
+  ctx.fillText('GRAND TOTAL', padding, y);
+
+  ctx.fillStyle = '#171717';
+  ctx.font = 'bold 34px Arial';
+  ctx.textAlign = 'right';
+  ctx.fillText(money(order.total), width - padding, y);
+  ctx.textAlign = 'left';
+
+  // Footer
+  y += 90;
+  ctx.fillStyle = '#777777';
+  ctx.font = '18px Arial';
+  ctx.textAlign = 'center';
+  ctx.fillText('Thank you for your order!', width / 2, y);
 
   try {
-    await navigator.clipboard.writeText(invoiceText);
-    showToast('Invoice copied. Paste with Ctrl + V');
+    const blob = await new Promise(resolve =>
+      canvas.toBlob(resolve, 'image/png')
+    );
+
+    if (!blob) throw new Error('PNG generation failed');
+
+    await navigator.clipboard.write([
+      new ClipboardItem({ 'image/png': blob })
+    ]);
+
+    showToast('Invoice image copied. Paste with Ctrl + V');
   } catch (error) {
-    showToast('Unable to copy invoice. Check clipboard permissions.');
+    console.error('Invoice image copy failed:', error);
+    showToast('Unable to copy invoice image. Check browser clipboard permissions.');
   }
 }
 function loadSavedOrder(id) {
