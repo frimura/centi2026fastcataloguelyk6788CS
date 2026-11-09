@@ -16,7 +16,8 @@ savedOrdersKey: 'centi_catalog_saved_orders_v1',
   identityKey: 'centi_catalog_requester_v1',
   refreshInterval: 5 * 60 * 1000
 };
-
+const SUPABASE_URL = 'https://rtvxegwgcjoxcmmojhqk.supabase.co';
+const SUPABASE_PUBLIC_KEY = 'YOUR_PUBLISHABLE_KEY';
 /* =========================================================
    2. LANGUAGE CONFIGURATION
    ========================================================= */
@@ -1106,62 +1107,59 @@ function processStockQueue() {
 }
 
 async function fetchStockBatch(skus) {
-  const separator = settings.scriptUrl.includes('?') ? '&' : '?';
-
-  const url =
-    settings.scriptUrl +
-    separator +
-    'action=stock-batch&skus=' +
-    encodeURIComponent(skus.join(','));
-
   try {
-    const result = await jsonp(url, 60000);
+    const uniqueSkus = [...new Set(skus)];
 
-    if (!result || !result.ok || !Array.isArray(result.stocks)) {
-      throw new Error(result?.error || 'Batch stock lookup failed.');
+    const query = new URLSearchParams({
+      select: 'sku,quantity,stock_status,manage_stock',
+      sku: `in.(${uniqueSkus.map(sku => `"${sku.replace(/"/g, '\\"')}"`).join(',')})`
+    });
+
+    const response = await fetch(
+      `${SUPABASE_URL}/rest/v1/wc_stock_cache?${query}`,
+      {
+        method: 'GET',
+        headers: {
+          apikey: SUPABASE_PUBLIC_KEY,
+          Authorization: `Bearer ${SUPABASE_PUBLIC_KEY}`
+        }
+      }
+    );
+
+    if (!response.ok) {
+      throw new Error(`Supabase error ${response.status}: ${await response.text()}`);
     }
 
-  result.stocks.forEach(stock => {
-  if (stock.stock_status === 'error') {
-    console.error(
-      'Stock fetch failed for SKU:',
-      stock.sku,
-      'Reason:',
-      stock.error
-    );
-  }
+    const stocks = await response.json();
 
-  const message = formatStockMessage(stock);
-  wooCommerceStockData.set(stock.sku, stock);
+    stocks.forEach(stock => {
+      const message = formatStockMessage(stock);
 
-      if (stock.stock_status !== 'error') {
-        wooCommerceStockCache.set(stock.sku, message);
-        wooCommerceStockExpiry.set(
-          stock.sku,
-          Date.now() + STOCK_CACHE_MS
-        );
-      }
+      wooCommerceStockData.set(stock.sku, stock);
+      wooCommerceStockCache.set(stock.sku, message);
+      wooCommerceStockExpiry.set(
+        stock.sku,
+        Date.now() + STOCK_CACHE_MS
+      );
 
       updateProductCardStock(stock.sku, message);
     });
 
-    // Show an unavailable message for any SKU omitted by the backend.
-    result.stocks.forEach(stock => {
-      const index = skus.indexOf(stock.sku);
-      if (index !== -1) skus[index] = null;
-    });
+    const returnedSkus = new Set(stocks.map(stock => stock.sku));
 
-    skus.filter(Boolean).forEach(sku => {
-      updateProductCardStock(
-        sku,
-        currentLanguage === 'id'
-          ? 'Estimasi stok tidak tersedia'
-          : 'Stock estimate unavailable'
-      );
+    uniqueSkus.forEach(sku => {
+      if (!returnedSkus.has(sku)) {
+        updateProductCardStock(
+          sku,
+          currentLanguage === 'id'
+            ? 'Estimasi stok tidak tersedia'
+            : 'Stock estimate unavailable'
+        );
+      }
     });
 
   } catch (error) {
-    console.warn('Stock batch lookup failed:', error);
+    console.warn('Supabase stock lookup failed:', error);
 
     skus.forEach(sku => {
       updateProductCardStock(
