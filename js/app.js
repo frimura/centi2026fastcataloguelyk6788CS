@@ -1121,9 +1121,18 @@ async function fetchStockBatch(skus) {
       throw new Error(result?.error || 'Batch stock lookup failed.');
     }
 
-    result.stocks.forEach(stock => {
-      const message = formatStockMessage(stock);
-       wooCommerceStockData.set(stock.sku, stock);
+  result.stocks.forEach(stock => {
+  if (stock.stock_status === 'error') {
+    console.error(
+      'Stock fetch failed for SKU:',
+      stock.sku,
+      'Reason:',
+      stock.error
+    );
+  }
+
+  const message = formatStockMessage(stock);
+  wooCommerceStockData.set(stock.sku, stock);
 
       if (stock.stock_status !== 'error') {
         wooCommerceStockCache.set(stock.sku, message);
