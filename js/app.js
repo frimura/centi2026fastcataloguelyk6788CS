@@ -1899,7 +1899,7 @@ $('navCatalog').parentElement.insertBefore(
 );
 
 importButton.onclick = importOrderFromClipboard;
-
+$('navImport').onclick = importOrderFromClipboard;
 $('navCatalog').onclick = () => {
   window.scrollTo({ top: 0, behavior: 'smooth' });
 };
