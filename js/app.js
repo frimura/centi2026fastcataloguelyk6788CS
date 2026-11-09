@@ -293,6 +293,7 @@ let catalogRequest = null;
 let selectedProduct = null;
 const wooCommerceStockCache = new Map();
 const wooCommerceStockExpiry = new Map();
+const wooCommerceStockData = new Map();
 
 const stockQueue = [];
 const stockQueued = new Set();
@@ -1022,6 +1023,7 @@ function getCachedStockMessage(sku) {
   if (!expiresAt || Date.now() >= expiresAt) {
     wooCommerceStockCache.delete(sku);
     wooCommerceStockExpiry.delete(sku);
+     wooCommerceStockData.delete(sku);
     return null;
   }
 
@@ -1121,6 +1123,7 @@ async function fetchStockBatch(skus) {
 
     result.stocks.forEach(stock => {
       const message = formatStockMessage(stock);
+       wooCommerceStockData.set(stock.sku, stock);
 
       if (stock.stock_status !== 'error') {
         wooCommerceStockCache.set(stock.sku, message);
@@ -1163,75 +1166,59 @@ async function fetchStockBatch(skus) {
 }
 function updateProductCardStock(sku, message) {
   document.querySelectorAll('[data-stock-for]').forEach(slot => {
-       if (
+    if (slot.dataset.stockFor === sku) {
+      slot.textContent = message;
+    }
+  });
+
+  if (
     selectedProduct &&
     selectedProduct.sku === sku &&
     $('quantityModalStock')
   ) {
     $('quantityModalStock').textContent = message;
   }
-    if (slot.dataset.stockFor === sku) {
-      slot.textContent = message;
-    }
-  });
+
+  updateCartStockDisplay(sku, message);
 }
 
-function fetchAndDisplayProductStock(sku) {
-  // Use cached result if available.
-  if (wooCommerceStockCache.has(sku)) {
-    updateProductCardStock(sku, wooCommerceStockCache.get(sku));
+function updateCartStockDisplay(sku, message) {
+  const slot = document.querySelector(
+    `[data-cart-stock-for="${CSS.escape(sku)}"]`
+  );
+
+  if (!slot) return;
+
+  const text = slot.querySelector('.cart-stock-text');
+  const warning = slot.querySelector('.cart-stock-warning');
+
+  if (text) text.textContent = message;
+
+  const stock = wooCommerceStockData.get(sku);
+  const item = cart[sku];
+
+  if (!warning || !stock || !item) {
+    if (warning) warning.hidden = true;
     return;
   }
 
-  const loadingText = currentLanguage === 'id'
-    ? 'Memeriksa estimasi stok...'
-    : 'Checking stock estimate...';
+  const hasNumericStock =
+    stock.manage_stock &&
+    stock.quantity !== null &&
+    stock.quantity !== undefined &&
+    Number.isFinite(Number(stock.quantity));
 
-  updateProductCardStock(sku, loadingText);
+  const insufficient =
+    stock.stock_status === 'outofstock' ||
+    (
+      hasNumericStock &&
+      item.qty > Number(stock.quantity)
+    );
 
-  // Prevent duplicate requests for the same SKU.
-  wooCommerceStockCache.set(sku, loadingText);
-
-  checkWooCommerceStock(sku)
-    .then(stock => {
-      let message;
-
-      if (stock.stock_status === 'outofstock') {
-        message = currentLanguage === 'id'
-          ? 'Estimasi stok: Habis'
-          : 'Estimated stock: Out of stock';
-
-      } else if (
-        stock.manage_stock &&
-        stock.quantity !== null &&
-        stock.quantity !== undefined
-      ) {
-        message = currentLanguage === 'id'
-          ? `Estimasi stok: ${stock.quantity} unit`
-          : `Estimated stock: ${stock.quantity} units`;
-
-      } else {
-        message = currentLanguage === 'id'
-          ? 'Stok tersedia (jumlah tidak dilacak)'
-          : 'In stock (quantity not tracked)';
-      }
-
-      wooCommerceStockCache.set(sku, message);
-      updateProductCardStock(sku, message);
-    })
-    .catch(error => {
-      console.warn('Product card stock lookup failed:', sku, error);
-
-      // Allow another attempt on the next click.
-      wooCommerceStockCache.delete(sku);
-
-      updateProductCardStock(
-        sku,
-        currentLanguage === 'id'
-          ? 'Estimasi stok tidak tersedia'
-          : 'Stock estimate unavailable'
-      );
-    });
+  warning.hidden = !insufficient;
+  warning.textContent = currentLanguage === 'id'
+    ? '⚠ Stok mungkin tidak cukup'
+    : '⚠ Stock may be insufficient';
 }
 
 function confirmAddToCart() {
@@ -1322,6 +1309,22 @@ function renderCart() {
               <div class="cart-product-info">
                 <strong>${esc(item.name)}</strong>
                 <small>${t('sku')}: ${esc(item.sku)} · ${money(item.price)} ${t('each')}</small>
+                <div
+  class="cart-stock"
+  data-cart-stock-for="${esc(item.sku)}"
+  style="font-size:12px; margin-top:5px;"
+>
+  <span class="cart-stock-text">
+    ${currentLanguage === 'id'
+      ? 'Memeriksa estimasi stok...'
+      : 'Checking stock estimate...'}
+  </span>
+  <span
+    class="cart-stock-warning"
+    hidden
+   style="color:#dc2626; font-weight:600; margin-top:3px;"
+  ></span>
+</div>
 
                 <div class="qty-control">
                   <button data-minus="${esc(item.sku)}">−</button>
@@ -1355,7 +1358,15 @@ function renderCart() {
         <span>${t('emptyCartText')}</span>
       </div>
     `;
+items.forEach(item => {
+  const cached = getCachedStockMessage(item.sku);
 
+  if (cached) {
+    updateProductCardStock(item.sku, cached);
+  } else {
+    fetchAndDisplayProductStock(item.sku);
+  }
+});
   $('cartTotal').textContent = money(
     items.reduce((sum, item) => sum + item.price * item.qty, 0)
   );
