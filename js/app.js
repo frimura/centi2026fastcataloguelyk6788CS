@@ -1736,7 +1736,6 @@ function loadSavedOrder(id) {
   openCart();
 
   showToast(`Loaded "${order.name}"`);
-     releasePanelBackGuard();
 }
 
 function deleteSavedOrder(id) {
@@ -2032,7 +2031,7 @@ async function pasteImportOrder() {
   } catch (error) {
     showToast('Cannot access clipboard. Paste manually.');
   }
-  releasePanelBackGuard();
+  
 }
 
 function importOrderFromText() {
@@ -2146,7 +2145,6 @@ function showToast(message) {
   toastTimer = setTimeout(() => {
     $('toast').classList.remove('show');
   }, 2600);
-     releasePanelBackGuard();
 }
 
 // Android / Mobile Back Button
@@ -2179,9 +2177,9 @@ window.addEventListener('popstate', () => {
     closeImportOrder();
   } else if (!$('savedOrdersPanel').classList.contains('hidden')) {
     closeSavedOrders();
-  } else if (!$('cartPanel').classList.contains('hidden')) {
-    closeCart();
-  }
+ } else if ($('cartPanel').classList.contains('open')) {
+  closeCart();
+}
      releasePanelBackGuard();
 });
 
