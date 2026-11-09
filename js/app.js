@@ -1201,7 +1201,7 @@ async function copySavedInvoice(id) {
   const rowHeight = 78;
   const headerHeight = 310;
   const footerHeight = 190;
-  const height = headerHeight + order.items.length * rowHeight + footerHeight;
+ const height = headerHeight + order.items.length * rowHeight + footerHeight + 180;
 
   canvas.width = width;
   canvas.height = height;
