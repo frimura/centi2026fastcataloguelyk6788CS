@@ -240,7 +240,7 @@ if (importNav) {
   importNav.lastChild.textContent =
     currentLanguage === 'id' ? 'Impor' : 'Import';
 }
-  $('navCart').lastChild.textContent = t('cart') + ' ';
+  $('navCartLabel').textContent = t('cart');
 
   $('cartPanel').querySelector('.panel-head strong').textContent =
     t('yourOrder');
