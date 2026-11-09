@@ -833,6 +833,7 @@ function openQuantitySelector(sku) {
   const product = products.find(item => item.sku === sku);
   if (!product) return;
 
+  activatePanelBackGuard();
   selectedProduct = product;
 
   $('quantityProductName').textContent =
@@ -1382,6 +1383,7 @@ function loadSavedOrder(id) {
   openCart();
 
   showToast(`Loaded "${order.name}"`);
+     releasePanelBackGuard();
 }
 
 function deleteSavedOrder(id) {
@@ -1403,6 +1405,7 @@ function deleteSavedOrder(id) {
 }
 
 function openSavedOrders() {
+  activatePanelBackGuard();
   renderSavedOrders();
 
   $('savedOrdersOverlay').classList.remove('hidden');
@@ -1657,6 +1660,7 @@ async function sendToPC() {
   }
 }
 function openImportOrder() {
+  activatePanelBackGuard();
   $('importOrderOverlay').classList.remove('hidden');
   $('importOrderPanel').classList.add('open');
   $('importOrderPanel').setAttribute('aria-hidden', 'false');
@@ -1675,6 +1679,7 @@ async function pasteImportOrder() {
   } catch (error) {
     showToast('Cannot access clipboard. Paste manually.');
   }
+  releasePanelBackGuard();
 }
 
 function importOrderFromText() {
@@ -1764,6 +1769,7 @@ function closeCart() {
 }
 
 function openSettings() {
+  activatePanelBackGuard();
   $('settingsOverlay').classList.remove('hidden');
   $('settingsPanel').classList.remove('hidden');
 
@@ -1785,7 +1791,44 @@ function showToast(message) {
   toastTimer = setTimeout(() => {
     $('toast').classList.remove('show');
   }, 2600);
+     releasePanelBackGuard();
 }
+
+// Android / Mobile Back Button
+let panelBackGuardActive = false;
+
+function activatePanelBackGuard() {
+  if (panelBackGuardActive) return;
+
+  history.pushState({ centiPanel: true }, '', location.href);
+  panelBackGuardActive = true;
+}
+
+function releasePanelBackGuard() {
+  if (!panelBackGuardActive) return;
+
+  panelBackGuardActive = false;
+  history.back();
+}
+
+window.addEventListener('popstate', () => {
+  if (!panelBackGuardActive) return;
+
+  panelBackGuardActive = false;
+
+  if (!$('quantityPanel').classList.contains('hidden')) {
+    closeQuantitySelector();
+  } else if (!$('settingsPanel').classList.contains('hidden')) {
+    closeSettings();
+  } else if ($('importOrderPanel').classList.contains('open')) {
+    closeImportOrder();
+  } else if (!$('savedOrdersPanel').classList.contains('hidden')) {
+    closeSavedOrders();
+  } else if (!$('cartPanel').classList.contains('hidden')) {
+    closeCart();
+  }
+     releasePanelBackGuard();
+});
 
 /* =========================================================
    15. EVENT LISTENERS
