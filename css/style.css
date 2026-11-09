@@ -1234,3 +1234,13 @@ main {
   padding-left: 10px;
   padding-right: 10px;
 }
+.copy-save-row {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 8px;
+    width: 100%;
+}
+
+.copy-save-row button {
+    width: 100%;
+}
