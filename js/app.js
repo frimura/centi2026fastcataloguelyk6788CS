@@ -1656,74 +1656,87 @@ async function sendToPC() {
     updatePCButton();
   }
 }
-async function importOrderFromClipboard() {
+function openImportOrder() {
+  $('importOrderOverlay').classList.remove('hidden');
+  $('importOrderPanel').classList.add('open');
+  $('importOrderPanel').setAttribute('aria-hidden', 'false');
+}
+
+function closeImportOrder() {
+  $('importOrderOverlay').classList.add('hidden');
+  $('importOrderPanel').classList.remove('open');
+  $('importOrderPanel').setAttribute('aria-hidden', 'true');
+}
+
+async function pasteImportOrder() {
   try {
-    const text = await navigator.clipboard.readText();
-
-    if (!/^New Order:/m.test(text)) {
-      showToast('Invalid order text in clipboard');
-      return;
-    }
-
-    const lines = text.split(/\r?\n/);
-    const importedCart = {};
-
-    for (let i = 0; i < lines.length; i++) {
-      const itemMatch = lines[i].trim().match(/^(\d+)\s*x\s+(.+)$/i);
-
-      if (!itemMatch) continue;
-
-      const skuMatch = lines[i + 1]?.trim().match(/^SKU:\s*(.+)$/i);
-      const priceMatch = lines[i + 2]?.trim().match(/^Price:\s*(.+)$/i);
-
-      if (!skuMatch || !priceMatch) continue;
-
-      const qty = Number(itemMatch[1]);
-      const name = itemMatch[2].trim();
-      const sku = skuMatch[1].trim();
-      const price = Number(priceMatch[1].replace(/[^\d]/g, ''));
-
-      if (!sku || !Number.isFinite(price) || qty <= 0) continue;
-
-      const product = products.find(
-        p => String(p.sku).trim() === sku
-      );
-
-      if (importedCart[sku]) {
-        importedCart[sku].qty += qty;
-      } else {
-        importedCart[sku] = {
-          sku,
-          name: product?.short || product?.name || name,
-          price,
-          image: product?.image || '',
-          qty
-        };
-      }
-    }
-
-    if (!Object.keys(importedCart).length) {
-      showToast('No valid products found in copied order');
-      return;
-    }
-
-    if (
-      cartValues().length &&
-      !confirm('Replace your current cart with this imported order?')
-    ) {
-      return;
-    }
-
-    cart = importedCart;
-    saveCart();
-    openCart();
-
-    showToast(`Imported ${Object.keys(importedCart).length} products`);
-
+    $('importOrderText').value =
+      await navigator.clipboard.readText();
   } catch (error) {
-    console.error('Order import failed:', error);
-    showToast('Cannot read clipboard. Check browser permission.');
+    showToast('Cannot access clipboard. Paste manually.');
   }
+}
+
+function importOrderFromText() {
+  const text = $('importOrderText').value.trim();
+
+  if (!/^New Order:/m.test(text)) {
+    showToast('Invalid order text');
+    return;
+  }
+
+  const lines = text.split(/\r?\n/);
+  const importedCart = {};
+
+  for (let i = 0; i < lines.length; i++) {
+    const itemMatch = lines[i].trim().match(/^(\d+)\s*x\s+(.+)$/i);
+
+    if (!itemMatch) continue;
+
+    const skuMatch = lines[i + 1]?.trim().match(/^SKU:\s*(.+)$/i);
+    const priceMatch = lines[i + 2]?.trim().match(/^Price:\s*(.+)$/i);
+
+    if (!skuMatch || !priceMatch) continue;
+
+    const qty = Number(itemMatch[1]);
+    const name = itemMatch[2].trim();
+    const sku = skuMatch[1].trim();
+    const price = Number(priceMatch[1].replace(/[^\d]/g, ''));
+
+    if (!sku || !Number.isFinite(price) || qty <= 0) continue;
+
+    const product = products.find(
+      p => String(p.sku).trim() === sku
+    );
+
+    importedCart[sku] = {
+      sku,
+      name: product?.short || product?.name || name,
+      price,
+      image: product?.image || '',
+      qty: (importedCart[sku]?.qty || 0) + qty
+    };
+  }
+
+  if (!Object.keys(importedCart).length) {
+    showToast('No valid products found');
+    return;
+  }
+
+  if (
+    cartValues().length &&
+    !confirm('Replace your current cart with this imported order?')
+  ) {
+    return;
+  }
+
+  cart = importedCart;
+  saveCart();
+
+  closeImportOrder();
+  openCart();
+
+  showToast(`Imported ${Object.keys(importedCart).length} products`);
 }
 async function copyOrder() {
   try {
@@ -1880,26 +1893,14 @@ $('closeSavedOrders').onclick = closeSavedOrders;
 $('savedOrdersOverlay').onclick = closeSavedOrders;
 
 $('saveCartOrder').onclick = saveCurrentOrder;
+   $('navImport').onclick = openImportOrder;
 
-// Import button — far left of bottom navigation
-const importButton = $('navCatalog').cloneNode(true);
+$('closeImportOrder').onclick = closeImportOrder;
+$('importOrderOverlay').onclick = closeImportOrder;
 
-importButton.id = 'navImport';
+$('pasteImportOrder').onclick = pasteImportOrder;
+$('confirmImportOrder').onclick = importOrderFromText;
 
-if (importButton.firstElementChild) {
-  importButton.firstElementChild.textContent = '📋';
-}
-
-importButton.lastChild.textContent =
-  currentLanguage === 'id' ? 'Impor' : 'Import';
-
-$('navCatalog').parentElement.insertBefore(
-  importButton,
-  $('navCatalog')
-);
-
-importButton.onclick = importOrderFromClipboard;
-$('navImport').onclick = importOrderFromClipboard;
 $('navCatalog').onclick = () => {
   window.scrollTo({ top: 0, behavior: 'smooth' });
 };
