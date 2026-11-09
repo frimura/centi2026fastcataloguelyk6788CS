@@ -1172,3 +1172,65 @@ main {
   font: inherit;
   font-size: 13px;
 }
+
+/* =========================================================
+   SAVED ORDERS
+   ========================================================= */
+
+.saved-order-card {
+  padding: 14px 0;
+  border-bottom: 1px solid var(--line);
+}
+
+.saved-order-info {
+  display: flex;
+  flex-direction: column;
+  gap: 5px;
+  min-width: 0;
+}
+
+.saved-order-info strong {
+  font-size: 14px;
+  overflow-wrap: anywhere;
+}
+
+.saved-order-info small {
+  color: var(--muted);
+  font-size: 11px;
+}
+
+.saved-order-actions {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 8px;
+  margin-top: 10px;
+}
+
+.saved-order-actions button {
+  min-height: 38px;
+  padding: 8px;
+  border-radius: 8px;
+  font-size: 12px;
+}
+
+.saved-order-actions .remove-button {
+  border: 1px solid #dc2626;
+  background: white;
+  color: #dc2626;
+  font-weight: 700;
+}
+
+#savedOrdersPanel {
+  z-index: 31;
+}
+
+#savedOrdersOverlay {
+  z-index: 30;
+}
+
+#savedOrdersTop {
+  white-space: nowrap;
+  font-size: 12px;
+  padding-left: 10px;
+  padding-right: 10px;
+}
