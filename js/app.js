@@ -292,6 +292,18 @@ let refreshTimer = null;
 let catalogRequest = null;
 let selectedProduct = null;
 const wooCommerceStockCache = new Map();
+const wooCommerceStockExpiry = new Map();
+
+const stockQueue = [];
+const stockQueued = new Set();
+const stockInFlight = new Set();
+
+let activeStockBatches = 0;
+let stockObserver = null;
+
+const STOCK_BATCH_SIZE = 5;
+const STOCK_MAX_CONCURRENT_BATCHES = 4;
+const STOCK_CACHE_MS = 5 * 60 * 1000;
 let requesterName = readStorage(CONFIG.identityKey, '');
 let previousSearchQuery = '';
 
@@ -834,12 +846,33 @@ function renderProducts() {
   });
 });
 
-// Restore previously fetched stock after catalogue re-render.
+// Restore cached stock and observe cards as they enter the viewport.
+if (!stockObserver && 'IntersectionObserver' in window) {
+  stockObserver = new IntersectionObserver(entries => {
+    entries.forEach(entry => {
+      if (!entry.isIntersecting) return;
+
+      const sku = entry.target.dataset.stockFor;
+
+      stockObserver.unobserve(entry.target);
+      fetchAndDisplayProductStock(sku);
+    });
+  }, {
+    rootMargin: '150px 0px',
+    threshold: 0
+  });
+}
+
 host.querySelectorAll('[data-stock-for]').forEach(slot => {
-  const cached = wooCommerceStockCache.get(slot.dataset.stockFor);
+  const sku = slot.dataset.stockFor;
+  const cached = getCachedStockMessage(sku);
 
   if (cached) {
     slot.textContent = cached;
+  } else if (stockObserver) {
+    stockObserver.observe(slot);
+  } else {
+    fetchAndDisplayProductStock(sku);
   }
 });
 }
@@ -875,10 +908,12 @@ if (!modalStock) {
 }
 
 modalStock.textContent =
-  wooCommerceStockCache.get(sku) ||
+  getCachedStockMessage(sku) ||
   (currentLanguage === 'id'
     ? 'Memeriksa estimasi stok...'
     : 'Checking stock estimate...');
+
+fetchAndDisplayProductStock(sku);
   $('productQuantity').value = 1;
 
   const image = $('quantityImage');
@@ -980,6 +1015,151 @@ function showWooCommerceStock(sku) {
   info.textContent = currentLanguage === 'id'
     ? 'Memeriksa estimasi stok...'
     : 'Checking estimated stock...';
+}
+function getCachedStockMessage(sku) {
+  const expiresAt = wooCommerceStockExpiry.get(sku);
+
+  if (!expiresAt || Date.now() >= expiresAt) {
+    wooCommerceStockCache.delete(sku);
+    wooCommerceStockExpiry.delete(sku);
+    return null;
+  }
+
+  return wooCommerceStockCache.get(sku) || null;
+}
+
+function formatStockMessage(stock) {
+  if (stock.stock_status === 'not_found' || stock.stock_status === 'error') {
+    return currentLanguage === 'id'
+      ? 'Estimasi stok tidak tersedia'
+      : 'Stock estimate unavailable';
+  }
+
+  if (stock.stock_status === 'outofstock') {
+    return currentLanguage === 'id'
+      ? 'Estimasi stok: Habis'
+      : 'Estimated stock: Out of stock';
+  }
+
+  if (
+    stock.manage_stock &&
+    stock.quantity !== null &&
+    stock.quantity !== undefined
+  ) {
+    return currentLanguage === 'id'
+      ? `Estimasi stok: ${stock.quantity} unit`
+      : `Estimated stock: ${stock.quantity} units`;
+  }
+
+  return currentLanguage === 'id'
+    ? 'Stok tersedia (jumlah tidak dilacak)'
+    : 'In stock (quantity not tracked)';
+}
+
+function fetchAndDisplayProductStock(sku) {
+  const cached = getCachedStockMessage(sku);
+
+  if (cached) {
+    updateProductCardStock(sku, cached);
+    return;
+  }
+
+  if (stockQueued.has(sku) || stockInFlight.has(sku)) {
+    return;
+  }
+
+  const loadingText = currentLanguage === 'id'
+    ? 'Memeriksa estimasi stok...'
+    : 'Checking stock estimate...';
+
+  updateProductCardStock(sku, loadingText);
+
+  stockQueue.push(sku);
+  stockQueued.add(sku);
+
+  processStockQueue();
+}
+
+function processStockQueue() {
+  while (
+    activeStockBatches < STOCK_MAX_CONCURRENT_BATCHES &&
+    stockQueue.length
+  ) {
+    const batch = stockQueue.splice(0, STOCK_BATCH_SIZE);
+
+    batch.forEach(sku => {
+      stockQueued.delete(sku);
+      stockInFlight.add(sku);
+    });
+
+    activeStockBatches++;
+
+    fetchStockBatch(batch)
+      .finally(() => {
+        batch.forEach(sku => stockInFlight.delete(sku));
+        activeStockBatches--;
+        processStockQueue();
+      });
+  }
+}
+
+async function fetchStockBatch(skus) {
+  const separator = settings.scriptUrl.includes('?') ? '&' : '?';
+
+  const url =
+    settings.scriptUrl +
+    separator +
+    'action=stock-batch&skus=' +
+    encodeURIComponent(skus.join(','));
+
+  try {
+    const result = await jsonp(url, 60000);
+
+    if (!result || !result.ok || !Array.isArray(result.stocks)) {
+      throw new Error(result?.error || 'Batch stock lookup failed.');
+    }
+
+    result.stocks.forEach(stock => {
+      const message = formatStockMessage(stock);
+
+      if (stock.stock_status !== 'error') {
+        wooCommerceStockCache.set(stock.sku, message);
+        wooCommerceStockExpiry.set(
+          stock.sku,
+          Date.now() + STOCK_CACHE_MS
+        );
+      }
+
+      updateProductCardStock(stock.sku, message);
+    });
+
+    // Show an unavailable message for any SKU omitted by the backend.
+    result.stocks.forEach(stock => {
+      const index = skus.indexOf(stock.sku);
+      if (index !== -1) skus[index] = null;
+    });
+
+    skus.filter(Boolean).forEach(sku => {
+      updateProductCardStock(
+        sku,
+        currentLanguage === 'id'
+          ? 'Estimasi stok tidak tersedia'
+          : 'Stock estimate unavailable'
+      );
+    });
+
+  } catch (error) {
+    console.warn('Stock batch lookup failed:', error);
+
+    skus.forEach(sku => {
+      updateProductCardStock(
+        sku,
+        currentLanguage === 'id'
+          ? 'Estimasi stok tidak tersedia'
+          : 'Stock estimate unavailable'
+      );
+    });
+  }
 }
 function updateProductCardStock(sku, message) {
   document.querySelectorAll('[data-stock-for]').forEach(slot => {
