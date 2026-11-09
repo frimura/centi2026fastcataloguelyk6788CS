@@ -11,6 +11,7 @@ const CONFIG = {
   currency: 'IDR',
   cacheKey: 'centi_catalog_rows_v1',
   cartKey: 'centi_catalog_cart_v1',
+savedOrdersKey: 'centi_catalog_saved_orders_v1',
   settingsKey: 'centi_catalog_settings_v1',
   identityKey: 'centi_catalog_requester_v1',
   refreshInterval: 5 * 60 * 1000
@@ -279,6 +280,7 @@ const CSV_URL =
 let products = [];
 let cart = readStorage(CONFIG.cartKey, {});
 let settings = readStorage(CONFIG.settingsKey, {});
+let savedOrders = readStorage(CONFIG.savedOrdersKey, []);
 let toastTimer;
 let searchTimer;
 let refreshTimer = null;
@@ -1010,10 +1012,11 @@ function renderCart() {
     items.reduce((sum, item) => sum + item.price * item.qty, 0)
   );
 
-  $('sendOrder').disabled = !items.length;
-  updatePCButton();
-  $('copyOrder').disabled = !items.length;
-  $('emptyCart').disabled = !items.length;
+ $('sendOrder').disabled = !items.length;
+updatePCButton();
+$('copyOrder').disabled = !items.length;
+$('emptyCart').disabled = !items.length;
+$('saveCartOrder').disabled = !items.length;
 
   $('cartItems').querySelectorAll('[data-minus]').forEach(button => {
     button.onclick = () => changeQty(button.dataset.minus, -1);
@@ -1061,6 +1064,176 @@ function emptyCart() {
   cart = {};
   saveCart();
   showToast(t('cartEmptied'));
+}
+
+/* =========================================================
+   12B. SAVED ORDERS
+   ========================================================= */
+
+function saveCurrentOrder() {
+  const items = cartValues();
+
+  if (!items.length) return;
+
+  const name = prompt('Enter a name for this order:');
+
+  if (name === null) return;
+
+  const cleanName = name.trim();
+
+  if (!cleanName) {
+    showToast('Please enter an order name');
+    return;
+  }
+
+  const order = {
+    id: 'SAVED-' + Date.now(),
+    name: cleanName,
+    createdAt: new Date().toISOString(),
+    requesterName,
+    customerType: $('customerType').value,
+    listenerDestination: $('listenerDestination').value,
+    items: JSON.parse(JSON.stringify(items)),
+    total: items.reduce(
+      (sum, item) => sum + item.price * item.qty, 0
+    )
+  };
+
+  savedOrders.unshift(order);
+
+  writeStorage(CONFIG.savedOrdersKey, savedOrders);
+
+  renderSavedOrders();
+
+  showToast(`Order "${cleanName}" saved`);
+}
+
+function renderSavedOrders() {
+  const host = $('savedOrdersList');
+
+  $('savedOrdersSubtitle').textContent =
+    `${savedOrders.length} saved orders`;
+
+  if (!savedOrders.length) {
+    host.innerHTML = `
+      <div class="empty">
+        <strong>No saved orders</strong>
+        <span>Save an order from your cart.</span>
+      </div>
+    `;
+    return;
+  }
+
+  host.innerHTML = savedOrders.map(order => `
+    <div class="saved-order-card" data-saved-id="${esc(order.id)}">
+
+      <div class="saved-order-info">
+        <strong>${esc(order.name)}</strong>
+
+        <small>
+          ${order.items.length} different products ·
+          ${money(order.total)}
+        </small>
+
+        <small>
+          ${esc(order.requesterName || 'Unknown')} ·
+          ${new Date(order.createdAt).toLocaleString()}
+        </small>
+      </div>
+
+      <div class="saved-order-actions">
+        <button type="button"
+                class="primary-button"
+                data-load-saved="${esc(order.id)}">
+          Load
+        </button>
+
+        <button type="button"
+                class="remove-button"
+                data-delete-saved="${esc(order.id)}">
+          Delete
+        </button>
+      </div>
+
+    </div>
+  `).join('');
+
+  host.querySelectorAll('[data-load-saved]').forEach(button => {
+    button.onclick = () => loadSavedOrder(button.dataset.loadSaved);
+  });
+
+  host.querySelectorAll('[data-delete-saved]').forEach(button => {
+    button.onclick = () => deleteSavedOrder(button.dataset.deleteSaved);
+  });
+}
+
+function loadSavedOrder(id) {
+  const order = savedOrders.find(item => item.id === id);
+
+  if (!order) return;
+
+  if (cartValues().length) {
+    if (!confirm(
+      'Replace your current cart with "' + order.name + '"?'
+    )) {
+      return;
+    }
+  }
+
+  cart = {};
+
+  order.items.forEach(item => {
+    cart[item.sku] = {
+      sku: item.sku,
+      name: item.name,
+      price: Number(item.price) || 0,
+      image: item.image || '',
+      qty: Math.max(1, Number(item.qty) || 1)
+    };
+  });
+
+  $('customerType').value = order.customerType || '';
+  $('listenerDestination').value =
+    order.listenerDestination || '';
+
+  saveCart();
+
+  closeSavedOrders();
+  openCart();
+
+  showToast(`Loaded "${order.name}"`);
+}
+
+function deleteSavedOrder(id) {
+  const order = savedOrders.find(item => item.id === id);
+
+  if (!order) return;
+
+  if (!confirm(`Delete saved order "${order.name}"?`)) {
+    return;
+  }
+
+  savedOrders = savedOrders.filter(item => item.id !== id);
+
+  writeStorage(CONFIG.savedOrdersKey, savedOrders);
+
+  renderSavedOrders();
+
+  showToast('Saved order deleted');
+}
+
+function openSavedOrders() {
+  renderSavedOrders();
+
+  $('savedOrdersOverlay').classList.remove('hidden');
+  $('savedOrdersPanel').classList.add('open');
+  $('savedOrdersPanel').setAttribute('aria-hidden', 'false');
+}
+
+function closeSavedOrders() {
+  $('savedOrdersOverlay').classList.add('hidden');
+  $('savedOrdersPanel').classList.remove('open');
+  $('savedOrdersPanel').setAttribute('aria-hidden', 'true');
 }
 
 /* =========================================================
@@ -1453,7 +1626,12 @@ function bindEvents() {
 
   $('cartTop').onclick = openCart;
   $('navCart').onclick = openCart;
+$('savedOrdersTop').onclick = openSavedOrders;
 
+$('closeSavedOrders').onclick = closeSavedOrders;
+$('savedOrdersOverlay').onclick = closeSavedOrders;
+
+$('saveCartOrder').onclick = saveCurrentOrder;
   $('navCatalog').onclick = () => {
     window.scrollTo({ top: 0, behavior: 'smooth' });
   };
@@ -1502,6 +1680,7 @@ function initializeApp() {
 
   updateCartBadge();
   renderCart();
+   renderSavedOrders();
 
   CentiSearch.loadRules('./search-rules.json')
     .then(() => {
