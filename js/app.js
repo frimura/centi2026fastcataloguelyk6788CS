@@ -2173,12 +2173,16 @@ function releasePanelBackGuard() {
   history.back();
 }
 
+
 window.addEventListener('popstate', () => {
   if (!panelBackGuardActive) return;
 
   panelBackGuardActive = false;
 
-  if (!$('quantityPanel').classList.contains('hidden')) {
+  // Cart gets priority: Back must close it before exiting the app.
+  if ($('cartPanel').classList.contains('open')) {
+    closeCart();
+  } else if (!$('quantityPanel').classList.contains('hidden')) {
     closeQuantitySelector();
   } else if (!$('settingsPanel').classList.contains('hidden')) {
     closeSettings();
@@ -2186,11 +2190,9 @@ window.addEventListener('popstate', () => {
     closeImportOrder();
   } else if (!$('savedOrdersPanel').classList.contains('hidden')) {
     closeSavedOrders();
- } else if ($('cartPanel').classList.contains('open')) {
-  closeCart();
-}
-     releasePanelBackGuard();
+  }
 });
+
 
 /* =========================================================
    15. EVENT LISTENERS
