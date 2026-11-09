@@ -893,8 +893,35 @@ function updateQuantitySubtotal() {
     money(selectedProduct.price * quantity);
 }
 
-function confirmAddToCart() {
+async function checkWooCommerceStock(sku) {
+  if (!settings.scriptUrl) {
+    throw new Error('Apps Script URL is not configured.');
+  }
+
+  const separator = settings.scriptUrl.includes('?') ? '&' : '?';
+
+  const url =
+    settings.scriptUrl +
+    separator +
+    'action=stock&sku=' +
+    encodeURIComponent(sku);
+
+  const result = await jsonp(url, 30000);
+
+  if (!result || !result.ok) {
+    throw new Error(result?.error || 'Stock lookup failed.');
+  }
+
+  if (result.stock_status === 'not_found') {
+    throw new Error('SKU not found in WooCommerce.');
+  }
+
+  return result;
+}
+async function confirmAddToCart() {
   if (!selectedProduct) return;
+
+  const button = $('confirmAddToCart');
 
   const quantity = Math.max(
     1,
@@ -902,11 +929,57 @@ function confirmAddToCart() {
   );
 
   const sku = selectedProduct.sku;
+  const currentCartQty = cart[sku]?.qty || 0;
+  const totalRequested = currentCartQty + quantity;
 
-  addToCart(sku, quantity);
-  closeQuantitySelector();
+  button.disabled = true;
 
-  showToast(`${t('added')} ${quantity} × ${sku} ${t('toCart')}`);
+  try {
+    const stock = await checkWooCommerceStock(sku);
+
+    if (stock.stock_status === 'outofstock') {
+      alert(
+        currentLanguage === 'id'
+          ? 'Produk sedang habis di WooCommerce.'
+          : 'This product is out of stock on WooCommerce.'
+      );
+      return;
+    }
+
+    if (stock.manage_stock) {
+      const available = Number(stock.quantity);
+
+      if (!Number.isFinite(available)) {
+        throw new Error('WooCommerce returned an invalid stock quantity.');
+      }
+
+      if (totalRequested > available) {
+        alert(
+          currentLanguage === 'id'
+            ? `Stok tersedia: ${available}\nJumlah di keranjang: ${currentCartQty}\nJumlah yang ingin ditambahkan: ${quantity}`
+            : `Available stock: ${available}\nAlready in cart: ${currentCartQty}\nAdditional quantity requested: ${quantity}`
+        );
+        return;
+      }
+    }
+
+    addToCart(sku, quantity);
+    closeQuantitySelector();
+
+    showToast(`${t('added')} ${quantity} × ${sku} ${t('toCart')}`);
+
+  } catch (error) {
+    console.error('WooCommerce stock check failed:', error);
+
+    alert(
+      currentLanguage === 'id'
+        ? 'Gagal memeriksa stok. Produk belum ditambahkan.\n' + error.message
+        : 'Could not verify stock. Product was not added.\n' + error.message
+    );
+
+  } finally {
+    button.disabled = false;
+  }
 }
 
 /* =========================================================
