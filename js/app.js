@@ -2012,6 +2012,11 @@ function openSettings() {
   activatePanelBackGuard();
   $('settingsOverlay').classList.remove('hidden');
   $('settingsPanel').classList.remove('hidden');
+  $('settingsPanel').classList.add('open');
+
+  $('scriptUrl').value = settings.scriptUrl || '';
+  $('orderPin').value = settings.pin || '';
+}
 
   $('scriptUrl').value = settings.scriptUrl || '';
   $('orderPin').value = settings.pin || '';
@@ -2019,7 +2024,9 @@ function openSettings() {
 
 function closeSettings() {
   $('settingsOverlay').classList.add('hidden');
+  $('settingsPanel').classList.remove('open');
   $('settingsPanel').classList.add('hidden');
+  releasePanelBackGuard();
 }
 
 function showToast(message) {
