@@ -210,7 +210,6 @@ function t(key) {
 }
 
 const $ = id => document.getElementById(id);
-const $ = id => document.getElementById(id);
 
 function setButtonLabel(id, label) {
   const button = $(id);
