@@ -1364,3 +1364,96 @@ main {
   font-weight: 700;
 }
 #cartPanel .cart-actions button { font-size: 11px !important; }
+/* ===== SAVED ORDERS: NICER CARDS & BUTTONS ===== */
+
+#savedOrdersList {
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+  padding: 14px 16px;
+}
+
+.saved-order-card {
+  padding: 14px;
+  border: 1px solid var(--line);
+  border-radius: 14px;
+  background: var(--white);
+  box-shadow: 0 2px 8px rgba(20, 31, 52, .04);
+}
+
+.saved-order-info strong {
+  font-size: 15px;
+  font-weight: 800;
+}
+
+.saved-order-info small {
+  line-height: 1.4;
+}
+
+/* Button row: Load + Copy share the space, Delete stays compact */
+.saved-order-actions {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) minmax(0, 1fr) auto;
+  gap: 8px;
+  margin-top: 12px;
+}
+
+.saved-order-actions > button {
+  width: 100%;
+  min-width: 0;
+  min-height: 40px;
+  margin: 0 !important;          /* removes the stray margin-top that offset Copy Invoice */
+  padding: 8px 12px;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 6px;
+  border-radius: 10px;
+  font-size: 12.5px;
+  font-weight: 700;
+  line-height: 1;
+  white-space: nowrap;
+  transition: background .15s, transform .05s, box-shadow .15s;
+}
+
+.saved-order-actions > button:active { transform: scale(.97); }
+
+/* Load = primary (first, left) */
+.saved-order-actions > button:nth-child(1) {
+  order: 1;
+  border: 1px solid var(--green);
+  background: var(--green);
+  color: var(--white);
+  box-shadow: 0 2px 6px rgba(22, 132, 91, .25);
+}
+.saved-order-actions > button:nth-child(1):active { background: var(--green-dark); }
+
+/* Copy Invoice = neutral outline (middle) */
+.saved-order-actions > button:nth-child(3) {
+  order: 2;
+  border: 1px solid var(--line);
+  background: var(--white);
+  color: var(--ink);
+}
+.saved-order-actions > button:nth-child(3):active { background: var(--bg); }
+
+/* Delete = soft red, compact (last, right) */
+.saved-order-actions > button:nth-child(2),
+.saved-order-actions .remove-button {
+  order: 3;
+  width: auto;
+  padding: 8px 14px;
+  border: 1px solid #f1c4c4;
+  background: #fef2f2;
+  color: #dc2626;
+}
+.saved-order-actions > button:nth-child(2):active,
+.saved-order-actions .remove-button:active {
+  background: #fde0e0;
+}
+
+/* Very narrow phones: stack Load full width, others below */
+@media (max-width: 380px) {
+  .saved-order-actions { grid-template-columns: 1fr 1fr; }
+  .saved-order-actions > button:nth-child(1) { grid-column: 1 / -1; }
+}
