@@ -2079,21 +2079,26 @@ function bindEvents() {
   const menuButton = $('headerMenuButton');
   const menu = $('headerMenu');
 
-  menuButton.onclick = event => {
-    event.stopPropagation();
+  if (menuButton && menu) {
+    menuButton.onclick = event => {
+      event.stopPropagation();
 
-    const isOpen = !menu.classList.contains('hidden');
+      const isOpen = !menu.classList.contains('hidden');
 
-    menu.classList.toggle('hidden', isOpen);
-    menuButton.setAttribute('aria-expanded', String(!isOpen));
-  };
+      menu.classList.toggle('hidden', isOpen);
+      menuButton.setAttribute('aria-expanded', String(!isOpen));
+    };
 
-  document.addEventListener('click', event => {
-    if (!event.target.closest('.header-menu')) {
-      menu.classList.add('hidden');
-      menuButton.setAttribute('aria-expanded', 'false');
-    }
-  });
+    document.addEventListener('click', event => {
+      if (!event.target.closest('.header-menu')) {
+        menu.classList.add('hidden');
+        menuButton.setAttribute('aria-expanded', 'false');
+      }
+    });
+  }
+
+  // Keep the rest of your existing bindEvents() code here.
+
 
   const languageSelect = $('languageSelect');
 
