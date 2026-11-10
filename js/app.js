@@ -297,8 +297,14 @@ let stockObserver = null;
 const STOCK_BATCH_SIZE = 5;
 const STOCK_MAX_CONCURRENT_BATCHES = 4;
 const STOCK_CACHE_MS = 5 * 60 * 1000;
-let requesterName = readStorage(CONFIG.identityKey, '');
-let previousSearchQuery = '';
+const ORDER_LOCATION_KEY = 'centi_catalog_order_location_v1';
+
+let orderLocation = (() => {
+  const saved = localStorage.getItem(ORDER_LOCATION_KEY);
+  return ['Pusat', 'Cabang Solo'].includes(saved)
+    ? saved
+    : 'Pusat';
+})();
 
 function readStorage(key, fallback) {
   try {
