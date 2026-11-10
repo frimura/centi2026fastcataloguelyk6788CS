@@ -1393,7 +1393,7 @@ main {
 /* Button row: Load + Copy share the space, Delete stays compact */
 .saved-order-actions {
   display: grid;
-  grid-template-columns: minmax(0, 1fr) minmax(0, 1fr) auto;
+    grid-template-columns: minmax(0, 1fr) minmax(0, 1fr) auto auto;
   gap: 8px;
   margin-top: 12px;
 }
@@ -1454,6 +1454,33 @@ main {
 
 /* Very narrow phones: stack Load full width, others below */
 @media (max-width: 380px) {
-  .saved-order-actions { grid-template-columns: 1fr 1fr; }
+    .saved-order-actions { grid-template-columns: minmax(0, 1fr) auto auto; }
   .saved-order-actions > button:nth-child(1) { grid-column: 1 / -1; }
 }
+
+/* ===== VIEW SAVED ORDER ===== */
+
+.saved-order-actions > .view-saved {
+  order: 4;
+  width: 40px;
+  padding: 0;
+  border: 1px solid var(--line);
+  background: var(--white);
+  color: var(--muted);
+}
+.saved-order-actions > .view-saved:active { background: var(--bg); }
+
+#viewOrderOverlay { z-index: 32; }
+#viewOrderPanel   { z-index: 33; }
+
+.view-order-footer {
+  padding: 14px 17px calc(14px + env(safe-area-inset-bottom));
+}
+.view-order-footer .total-line { margin-bottom: 0; }
+
+.view-order-meta {
+  margin-bottom: 10px;
+  color: var(--muted);
+  font-size: 12px;
+}
+.view-order-meta:empty { display: none; }
