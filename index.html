@@ -361,6 +361,29 @@
 
     <div id="savedOrdersList" class="cart-items"></div>
   </aside>
+
+  <!-- VIEW SAVED ORDER -->
+<div id="viewOrderOverlay" class="overlay hidden"></div>
+
+<aside id="viewOrderPanel" class="cart-panel" aria-hidden="true" aria-label="Order details">
+  <div class="panel-head">
+    <div>
+      <strong id="viewOrderTitle">Order</strong>
+      <small id="viewOrderSubtitle"></small>
+    </div>
+    <button id="closeViewOrder" class="icon-button" type="button" aria-label="Close">×</button>
+  </div>
+
+  <div id="viewOrderItems" class="cart-items"></div>
+
+  <div class="cart-footer view-order-footer">
+    <div class="view-order-meta" id="viewOrderMeta"></div>
+    <div class="total-line">
+      <span>Total</span>
+      <strong id="viewOrderTotal">Rp0</strong>
+    </div>
+  </div>
+</aside>
   
   <div id="toast" class="toast" role="status"></div>
   <script src="js/search.js"></script>
