@@ -1119,208 +1119,147 @@ main {
   outline-offset: 2px;
 }
 
-/* =========================================================
-   CART FOOTER — CONSOLIDATED COMPACT LAYOUT
-   ========================================================= */
 
-/* Footer uses a compact two-column grid. The cart item list above
-   remains the flexible scrolling area inside the cart panel. */
-.cart-footer {
-  display: grid;
-  grid-template-columns: repeat(2, minmax(0, 1fr));
-  column-gap: 8px;
-  row-gap: 6px;
-  flex: 0 0 auto;
+/* =========================================
+   CART FOOTER — CORRECTED GRID
+   ========================================= */
+
+#cartPanel .cart-footer {
+  display: grid !important;
+  grid-template-columns: minmax(0, 1fr) minmax(0, 1fr) !important;
+  gap: 6px !important;
+  padding: 8px 12px !important;
+  flex: 0 0 auto !important;
   min-width: 0;
-  padding: 8px 12px calc(8px + env(safe-area-inset-bottom));
-  border-top: 1px solid var(--line);
-  background: var(--white);
+  box-sizing: border-box;
 }
 
-.cart-footer > .total-line {
-  grid-column: 1 / -1;
-  margin: 0 0 1px;
+/* Total */
+#cartPanel .cart-footer > .total-line {
+  grid-column: 1 / -1 !important;
+  margin: 0 0 2px !important;
 }
 
-.cart-footer .total-line strong {
-  font-size: 21px;
+/* Location and customer fields */
+#cartPanel .cart-footer > .routing-field {
+  display: block !important;
+  width: 100% !important;
+  min-width: 0 !important;
+  margin: 0 !important;
 }
 
-/* Location and customer selection share one row. */
-.cart-footer > .routing-field {
-  width: 100%;
-  min-width: 0;
-  margin: 0;
+#cartPanel .cart-footer > .order-location-field {
+  grid-column: 1 !important;
 }
 
-.cart-footer > .order-location-field { grid-column: 1; }
-.cart-footer > .customer-type-field { grid-column: 2; }
+#cartPanel .cart-footer > .customer-type-field {
+  grid-column: 2 !important;
+}
 
-.cart-footer .destination-label {
+#cartPanel .destination-label {
   display: block;
-  margin: 0 0 3px;
+  margin-bottom: 3px;
   font-size: 10px;
-  line-height: 1.2;
-  font-weight: 650;
 }
 
-.cart-footer .order-location-toggle {
-  display: grid;
-  grid-template-columns: repeat(2, minmax(0, 1fr));
+#cartPanel .order-location-toggle,
+#cartPanel .destination-select {
+  width: 100% !important;
+  height: 36px !important;
+  min-height: 36px !important;
+  box-sizing: border-box;
+}
+
+#cartPanel .order-location-toggle {
+  display: grid !important;
+  grid-template-columns: 1fr 1fr !important;
   gap: 2px;
-  width: 100%;
-  height: 36px;
   padding: 3px;
+}
+
+#cartPanel .order-location-option {
+  height: 28px !important;
+  min-height: 28px !important;
+  padding: 2px !important;
+  font-size: 10px !important;
+}
+
+/* Button container */
+#cartPanel .cart-actions {
+  grid-column: 1 / -1 !important;
+  display: grid !important;
+  grid-template-columns: repeat(2, minmax(0, 1fr)) !important;
+  grid-template-rows: repeat(2, 38px) !important;
+  gap: 6px !important;
+  width: 100% !important;
+  min-width: 0;
+  margin: 0 !important;
+  padding: 6px !important;
   box-sizing: border-box;
-  border: 1px solid var(--line);
-  border-radius: 8px;
-  background: #f3f5f8;
 }
 
-.cart-footer .order-location-option {
-  min-width: 0;
-  min-height: 28px;
-  height: 28px;
-  padding: 2px;
-  border: 1px solid transparent;
-  border-radius: 6px;
-  background: transparent;
-  color: var(--muted);
-  font-size: 10px;
-  font-weight: 650;
-  white-space: nowrap;
+/* Remove wrapper layout without removing HTML */
+#cartPanel .copy-save-row,
+#cartPanel .send-buttons-grid {
+  display: contents !important;
 }
 
-.cart-footer .order-location-option.is-active {
-  border-color: #dce8e2;
-  background: #fff;
-  color: var(--green-dark);
-  box-shadow: 0 1px 4px rgba(20, 31, 52, .09);
+/* All buttons */
+#cartPanel .cart-actions button {
+  display: flex !important;
+  align-items: center !important;
+  justify-content: center !important;
+  flex-direction: row !important;
+  gap: 5px !important;
+
+  width: 100% !important;
+  height: 38px !important;
+  min-height: 38px !important;
+  max-height: 38px !important;
+  min-width: 0 !important;
+
+  margin: 0 !important;
+  padding: 3px 5px !important;
+  box-sizing: border-box !important;
+
+  border-radius: 8px !important;
+  font-size: 10px !important;
+  line-height: 1 !important;
+  white-space: nowrap !important;
 }
 
-.cart-footer .destination-select {
-  display: block;
-  width: 100%;
-  min-width: 0;
-  height: 36px;
-  min-height: 36px;
-  padding: 4px 7px;
-  border: 1px solid var(--line);
-  border-radius: 8px;
-  background: var(--white);
-  color: var(--ink);
-  font-size: 11px;
+/* Explicit positions */
+#cartPanel #saveCartOrder {
+  grid-column: 1 !important;
+  grid-row: 1 !important;
 }
 
-/* The existing wrappers remain in the HTML, but their children
-   participate directly in this two-column button grid. */
-.cart-actions {
-  grid-column: 1 / -1;
-  display: grid;
-  grid-template-columns: repeat(2, minmax(0, 1fr));
-  gap: 6px;
-  width: 100%;
-  min-width: 0;
-  margin: 0;
-  padding: 7px;
-  border: 1px solid var(--line);
-  border-radius: 12px;
-  background: var(--white);
+#cartPanel #sendOrder {
+  grid-column: 2 !important;
+  grid-row: 1 !important;
 }
 
-.cart-actions .copy-save-row,
-.cart-actions .send-buttons-grid {
-  display: contents;
+#cartPanel #copyOrder {
+  grid-column: 1 !important;
+  grid-row: 2 !important;
 }
 
-.cart-actions > button,
-.cart-actions .copy-save-row button,
-.cart-actions .send-buttons-grid button {
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  flex-direction: row;
-  gap: 5px;
-  width: 100%;
-  min-width: 0;
-  height: 38px;
-  min-height: 38px;
-  max-height: 38px;
-  margin: 0;
-  padding: 3px 5px;
-  box-sizing: border-box;
-  border-radius: 9px;
-  font: inherit;
-  font-size: 10px;
-  font-weight: 700;
-  line-height: 1;
-  white-space: nowrap;
+#cartPanel #emptyCart {
+  grid-column: 2 !important;
+  grid-row: 2 !important;
 }
 
-/* First row: Save Order + Send to Telegram. */
-.cart-actions #saveCartOrder {
-  grid-column: 1;
-  grid-row: 1;
-  border: 1px solid var(--line);
-  background: var(--white);
-  color: var(--ink);
+/* Icons */
+#cartPanel .cart-actions button svg {
+  width: 14px !important;
+  height: 14px !important;
+  flex-shrink: 0;
 }
 
-.cart-actions #sendOrder {
-  grid-column: 2;
-  grid-row: 1;
-  border: 0;
-  background: #229ed9;
-  color: #fff;
-}
-
-/* Second row: Copy order + Empty cart. */
-.cart-actions #copyOrder {
-  grid-column: 1;
-  grid-row: 2;
-  border: 1px solid var(--line);
-  background: var(--white);
-  color: var(--ink);
-}
-
-.cart-actions #emptyCart {
-  grid-column: 2;
-  grid-row: 2;
-  border: 1px solid #ffc5c5;
-  background: #fff7f7;
-  color: #e33;
-}
-
-.cart-actions button svg {
-  width: 14px;
-  height: 14px;
-  flex: 0 0 14px;
-}
-
-.cart-actions #sendOrder:not(:disabled):hover { background: #168ac4; }
-.cart-actions #emptyCart:not(:disabled):active { background: #fef2f2; }
-
-.cart-footer > .footnote {
-  grid-column: 1 / -1;
-  margin: 0;
+/* Footnote */
+#cartPanel .cart-footer > .footnote {
+  grid-column: 1 / -1 !important;
+  margin: 0 !important;
   font-size: 9px;
   line-height: 1.3;
-}
-
-@media (max-width: 360px) {
-  .cart-footer {
-    column-gap: 5px;
-    padding-left: 8px;
-    padding-right: 8px;
-  }
-
-  .cart-actions { gap: 5px; padding: 6px; }
-  .cart-actions > button,
-  .cart-actions .copy-save-row button,
-  .cart-actions .send-buttons-grid button {
-    gap: 3px;
-    padding-left: 3px;
-    padding-right: 3px;
-    font-size: 9px;
-  }
 }
