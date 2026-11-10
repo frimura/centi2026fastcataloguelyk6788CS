@@ -2010,9 +2010,11 @@ function closeCart() {
 
 function openSettings() {
   activatePanelBackGuard();
+
   $('settingsOverlay').classList.remove('hidden');
   $('settingsPanel').classList.remove('hidden');
   $('settingsPanel').classList.add('open');
+  $('settingsPanel').setAttribute('aria-hidden', 'false');
 
   $('scriptUrl').value = settings.scriptUrl || '';
   $('orderPin').value = settings.pin || '';
@@ -2026,6 +2028,8 @@ function closeSettings() {
   $('settingsOverlay').classList.add('hidden');
   $('settingsPanel').classList.remove('open');
   $('settingsPanel').classList.add('hidden');
+  $('settingsPanel').setAttribute('aria-hidden', 'true');
+
   releasePanelBackGuard();
 }
 
