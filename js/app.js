@@ -247,9 +247,10 @@ if (importNav) {
   $('cartPanel').querySelector('.total-line span').textContent = t('total');
 
 
-  $('sendOrder').textContent = t('sendTelegram');
-  $('copyOrder').textContent = t('copyOrder');
-  $('emptyCart').textContent = t('emptyCart');
+  setButtonLabel('sendOrder', t('sendTelegram'));
+setButtonLabel('copyOrder', t('copyOrder'));
+setButtonLabel('emptyCart', t('emptyCart'));
+   const $ = id => document.getElementById(id);
   $('saveSettings').textContent = t('saveSettings');
 
   const settingsLabels = $('settingsPanel').querySelectorAll('label');
