@@ -2461,12 +2461,46 @@ initializeApp();
   const FOOTER_TEXT =
     'Lembar ini merupakan nota sah yang di keluarkan oleh Centi Store';
 
-  function loadLogo() {
+   function loadLogo() {
     return new Promise(resolve => {
       const img = new Image();
-      img.onload = () => resolve(img);
+      img.onload = () => {
+        try {
+          const c = document.createElement('canvas');
+          c.width = img.width;
+          c.height = img.height;
+          const cx = c.getContext('2d');
+          cx.drawImage(img, 0, 0);
+          const d = cx.getImageData(0, 0, c.width, c.height).data;
+
+          let x1 = c.width, y1 = c.height, x2 = 0, y2 = 0;
+          for (let y = 0; y < c.height; y++) {
+            for (let x = 0; x < c.width; x++) {
+              const i = (y * c.width + x) * 4;
+              if (d[i + 3] > 10 && (d[i] < 220 || d[i + 1] < 220 || d[i + 2] < 220)) {
+                if (x < x1) x1 = x;
+                if (x > x2) x2 = x;
+                if (y < y1) y1 = y;
+                if (y > y2) y2 = y;
+              }
+            }
+          }
+
+          if (x2 <= x1 || y2 <= y1) return resolve(img);
+
+          const out = document.createElement('canvas');
+          out.width = x2 - x1 + 1;
+          out.height = y2 - y1 + 1;
+          out.getContext('2d').drawImage(
+            img, x1, y1, out.width, out.height, 0, 0, out.width, out.height
+          );
+          resolve(out);
+        } catch (e) {
+          resolve(img);
+        }
+      };
       img.onerror = () => resolve(null);
-      img.src = 'assets/centi-logo.png';
+      img.src = 'assets/centi-logo-nota.png';
     });
   }
 
@@ -2502,7 +2536,7 @@ initializeApp();
   }
 
   /* ---------- popup: name + payment method ---------- */
-  function askDetails() {
+   function askDetails(defaultType) {
     return new Promise(resolve => {
       let payment = 'Cash';
 
@@ -2524,6 +2558,20 @@ initializeApp();
                  placeholder="Kosongkan = jenis pelanggan saja"
                  style="width:100%;padding:11px;border:1px solid #e7eaf0;
                         border-radius:9px;font-size:14px;box-sizing:border-box">
+                        
+          <label style="display:block;font-size:12px;font-weight:700;margin:14px 0 6px">
+            Jenis pelanggan
+          </label>
+          <select id="notaTypeSelect"
+                  style="width:100%;padding:11px;border:1px solid #e7eaf0;
+                         border-radius:9px;font-size:14px;background:#fff;
+                         box-sizing:border-box">
+            <option value="">-</option>
+            ${[...document.querySelectorAll('#customerType option')]
+              .filter(o => o.value)
+              .map(o => `<option value="${o.value}"${o.value === defaultType ? ' selected' : ''}>${o.value}</option>`)
+              .join('')}
+          </select>
 
           <div style="font-size:12px;font-weight:700;margin:14px 0 6px">Pembayaran</div>
           <div style="display:grid;grid-template-columns:repeat(3,1fr);gap:8px">
@@ -2567,7 +2615,11 @@ initializeApp();
         .addEventListener('click', () => close(null));
       overlay.querySelector('[data-nota-ok]')
         .addEventListener('click', () =>
-          close({ name: input.value.trim(), payment }));
+                    close({
+            name: input.value.trim(),
+            payment,
+            customerType: overlay.querySelector('#notaTypeSelect').value
+          }));
 
       input.focus();
     });
@@ -2596,9 +2648,9 @@ initializeApp();
 
     /* header */
     if (logo) {
-      const lw = page.first ? 420 : 260;
+      const lw = page.first ? 440 : 300;
       const lh = lw * logo.height / logo.width;
-      ctx.drawImage(logo, M - 25, 0, lw, lh);
+      ctx.drawImage(logo, M, page.first ? 40 : 28, lw, lh);
     } else {
       ctx.fillStyle = '#8f0010';
       ctx.font = 'bold 40px Arial';
@@ -2614,7 +2666,7 @@ initializeApp();
       ctx.fillText('Nota Pembayaran', W - M, 78);
       ctx.font = '20px Arial';
       ctx.fillStyle = '#777777';
-      ctx.fillText(data.invoiceNumber, W - M, 112);
+      ctx.fillText(String(data.invoiceNumber).replace(/^INV-/, 'NOT-'), W - M, 112);
       hline(150, '#171717', 2);
 
       ctx.textAlign = 'left';
@@ -2681,7 +2733,7 @@ initializeApp();
       });
     }
 
-    /* totals (last page only) */
+        /* totals (last page only) */
     if (page.totals) {
       hline(y, '#171717', 2);
 
@@ -2695,29 +2747,29 @@ initializeApp();
       ctx.font = 'bold 40px Arial';
       ctx.fillText(money(data.total), W - M, y + 60);
 
-      hline(y + 90, '#cfd3da', 1);
+      /* payment + date are pinned to the bottom, above the footer */
+      const by = H - FOOT - 160;
+      hline(by, '#cfd3da', 1);
 
       ctx.textAlign = 'left';
       ctx.fillStyle = '#777777';
       ctx.font = '22px Arial';
-      ctx.fillText('Pembayaran', M, y + 138);
+      ctx.fillText('Pembayaran', M, by + 50);
       ctx.textAlign = 'right';
       ctx.fillStyle = '#171717';
       ctx.font = 'bold 26px Arial';
-      ctx.fillText(data.payment, W - M, y + 138);
+      ctx.fillText(data.payment, W - M, by + 50);
 
-      hline(y + 168, '#cfd3da', 1);
+      hline(by + 80, '#cfd3da', 1);
 
       ctx.textAlign = 'left';
       ctx.fillStyle = '#777777';
       ctx.font = '22px Arial';
-      ctx.fillText('Tanggal dibuat', M, y + 216);
+      ctx.fillText('Tanggal dibuat', M, by + 130);
       ctx.textAlign = 'right';
       ctx.fillStyle = '#171717';
       ctx.font = '24px Arial';
-      ctx.fillText(formatDate(data.createdAt), W - M, y + 216);
-
-      hline(y + 246, '#cfd3da', 1);
+      ctx.fillText(formatDate(data.createdAt), W - M, by + 130);
     }
 
     /* footer on every page */
@@ -2805,7 +2857,9 @@ initializeApp();
   }
 
   async function runNota(base) {
-    const details = await askDetails();
+        const details = await askDetails(
+      base.customerType || ($('customerType') ? $('customerType').value : '')
+    );
     if (!details) return;
 
     showToast('Membuat nota…');
@@ -2814,6 +2868,7 @@ initializeApp();
       const pages = await generatePages({
         ...base,
         customerName: details.name,
+       customerType: details.customerType,
         payment: details.payment
       });
       await printPages(pages);
