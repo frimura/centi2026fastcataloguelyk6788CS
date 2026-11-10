@@ -1810,9 +1810,9 @@ function orderText() {
   const lines = [
     `New Order: ${id}`,
     '---------------------------------',
-        'Pelanggan: Catalog Order',
-    `Requested by: ${requesterName || 'Unknown'}`,
-    `Lokasi: ${orderLocation}`,
+       `Pelanggan: ${$('customerType').value || 'Unknown'}`,
+`Requested by: ${requesterName || 'Unknown'}`,
+`Lokasi: ${orderLocation}`,
     'No : Mobile Catalog',
     '',
     'Pesanan :'
