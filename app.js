@@ -48,8 +48,8 @@ const LANG = {
     total: 'Total',
     customerType: 'Customer type',
     selectCustomer: 'Select customer',
-   
-    
+
+
     sendTelegram: 'Send to Telegram',
     copyOrder: 'Copy order text',
     emptyCart: 'Empty cart',
@@ -69,25 +69,25 @@ const LANG = {
     confirmEmpty: 'Are you sure you want to remove all products from your cart?',
     selectName: 'Select your name before sending an order',
     selectCustomerFirst: 'Please select a customer type',
-    
+
     setURL: 'Set your Apps Script URL first',
     enterPIN: 'Enter the order access PIN',
     orderTooLong: 'Order is too long. Copy it instead.',
     telegramTooLong: 'Order is too long for the secure bot request. Copy it instead.',
     confirmTelegram: 'CONFIRM TELEGRAM ORDER',
-    
+
     destination: 'Destination',
-    
+
     confirmSend: 'Are you sure you want to send this order?',
     sending: 'Sending…',
-    
+
     sentTelegram: 'Order sent to Telegram',
-    
+
     orderCopied: 'Order copied',
     copyUnavailable: 'Clipboard unavailable in this browser',
     settingsSaved: 'Settings saved',
     orderFailed: 'Send failed',
-    
+
     catalogUnavailable: 'Catalog unavailable',
     first160: 'Showing first 160 matches. Refine your search to narrow results.',
     close: 'Close',
@@ -95,9 +95,9 @@ const LANG = {
     each: 'each',
     productsLoaded: 'products loaded',
     offline: 'offline',
-    
+
     telegramRejected: 'Telegram rejected the order',
-    
+
     usingSavedCatalog: 'Using saved catalog',
     refreshFailed: 'Refresh failed',
     connectingSheets: 'Connecting to Google Sheets…',
@@ -211,10 +211,6 @@ function t(key) {
 
 const $ = id => document.getElementById(id);
 
-function setButtonLabel(id, label) {
-  const button = $(id);
-  if (button) button.textContent = label;
-}
 function applyLanguage() {
   document.documentElement.lang = currentLanguage;
 
@@ -251,9 +247,9 @@ if (importNav) {
   $('cartPanel').querySelector('.total-line span').textContent = t('total');
 
 
-  setButtonLabel('sendOrder', t('sendTelegram'));
-setButtonLabel('copyOrder', t('copyOrder'));
-setButtonLabel('emptyCart', t('emptyCart'));
+  $('sendOrder').textContent = t('sendTelegram');
+  $('copyOrder').textContent = t('copyOrder');
+  $('emptyCart').textContent = t('emptyCart');
   $('saveSettings').textContent = t('saveSettings');
 
   const settingsLabels = $('settingsPanel').querySelectorAll('label');
@@ -281,8 +277,6 @@ let products = [];
 let cart = readStorage(CONFIG.cartKey, {});
 let settings = readStorage(CONFIG.settingsKey, {});
 let savedOrders = readStorage(CONFIG.savedOrdersKey, []);
-let requesterName = readStorage(CONFIG.identityKey, '');
-let previousSearchQuery = '';
 let toastTimer;
 let searchTimer;
 let refreshTimer = null;
@@ -302,14 +296,8 @@ let stockObserver = null;
 const STOCK_BATCH_SIZE = 5;
 const STOCK_MAX_CONCURRENT_BATCHES = 4;
 const STOCK_CACHE_MS = 5 * 60 * 1000;
-const ORDER_LOCATION_KEY = 'centi_catalog_order_location_v1';
-
-let orderLocation = (() => {
-  const saved = localStorage.getItem(ORDER_LOCATION_KEY);
-  return ['Pusat', 'Cabang Solo'].includes(saved)
-    ? saved
-    : 'Pusat';
-})();
+let requesterName = readStorage(CONFIG.identityKey, '');
+let previousSearchQuery = '';
 
 function readStorage(key, fallback) {
   try {
@@ -1280,18 +1268,7 @@ function saveCart() {
 function cartValues() {
   return Object.values(cart).filter(item => item.qty > 0);
 }
-function setOrderLocation(location) {
-  if (!['Pusat', 'Cabang Solo'].includes(location)) return;
 
-  orderLocation = location;
-  localStorage.setItem(ORDER_LOCATION_KEY, location);
-
-  document.querySelectorAll('[data-order-location]').forEach(button => {
-    const active = button.dataset.orderLocation === orderLocation;
-    button.classList.toggle('is-active', active);
-    button.setAttribute('aria-pressed', String(active));
-  });
-}
 function updateCartBadge() {
   const count = cartValues().reduce((sum, item) => sum + item.qty, 0);
 
@@ -1473,9 +1450,8 @@ const order = {
   invoiceNumber: 'INV-' + savedAt.getTime(),
     name: cleanName,
     createdAt: new Date().toISOString(),
-        requesterName,
+    requesterName,
     customerType: $('customerType').value,
-    orderLocation,
 
     items: JSON.parse(JSON.stringify(items)),
     total: items.reduce(
@@ -1747,8 +1723,8 @@ function loadSavedOrder(id) {
     };
   });
 
-   $('customerType').value = order.customerType || '';
-  setOrderLocation(order.orderLocation || 'Pusat');
+  $('customerType').value = order.customerType || '';
+
 
   saveCart();
 
@@ -1809,9 +1785,8 @@ function orderText() {
   const lines = [
     `New Order: ${id}`,
     '---------------------------------',
-        'Pelanggan: Catalog Order',
+    'Pelanggan: Catalog Order',
     `Requested by: ${requesterName || 'Unknown'}`,
-    `Lokasi: ${orderLocation}`,
     'No : Mobile Catalog',
     '',
     'Pesanan :'
@@ -1853,12 +1828,11 @@ async function sendOrder() {
   }
 
   order.customerType = customerType;
-  order.orderLocation = orderLocation;
 
    await navigator.clipboard.writeText(order.text).catch(error => {
   console.warn('Order clipboard copy failed:', error);
 });
-   
+
   if (!confirm(
     t('confirmTelegram') + '\n\n' +
     t('destination') + ': TELEGRAM\n\n' +
@@ -1943,7 +1917,7 @@ async function pasteImportOrder() {
   } catch (error) {
     showToast('Cannot access clipboard. Paste manually.');
   }
-  
+
 }
 
 function importOrderFromText() {
@@ -2036,27 +2010,16 @@ function closeCart() {
 
 function openSettings() {
   activatePanelBackGuard();
-
   $('settingsOverlay').classList.remove('hidden');
   $('settingsPanel').classList.remove('hidden');
-  $('settingsPanel').classList.add('open');
-  $('settingsPanel').setAttribute('aria-hidden', 'false');
 
   $('scriptUrl').value = settings.scriptUrl || '';
   $('orderPin').value = settings.pin || '';
 }
 
-  $('scriptUrl').value = settings.scriptUrl || '';
-  $('orderPin').value = settings.pin || '';
-
-
 function closeSettings() {
   $('settingsOverlay').classList.add('hidden');
-  $('settingsPanel').classList.remove('open');
   $('settingsPanel').classList.add('hidden');
-  $('settingsPanel').setAttribute('aria-hidden', 'true');
-
-  releasePanelBackGuard();
 }
 
 function showToast(message) {
@@ -2116,12 +2079,18 @@ function bindEvents() {
   const menuButton = $('headerMenuButton');
   const menu = $('headerMenu');
 
+  menuButton.onclick = event => {
+    event.stopPropagation();
   if (menuButton && menu) {
     menuButton.onclick = event => {
       event.stopPropagation();
 
+    const isOpen = !menu.classList.contains('hidden');
       const isOpen = !menu.classList.contains('hidden');
 
+    menu.classList.toggle('hidden', isOpen);
+    menuButton.setAttribute('aria-expanded', String(!isOpen));
+  };
       menu.classList.toggle('hidden', isOpen);
       menuButton.setAttribute('aria-expanded', String(!isOpen));
     };
@@ -2136,6 +2105,12 @@ function bindEvents() {
 
   // Keep the rest of your existing bindEvents() code here.
 
+  document.addEventListener('click', event => {
+    if (!event.target.closest('.header-menu')) {
+      menu.classList.add('hidden');
+      menuButton.setAttribute('aria-expanded', 'false');
+    }
+  });
 
   const languageSelect = $('languageSelect');
 
@@ -2214,41 +2189,18 @@ function bindEvents() {
   $('cartTop').onclick = openCart;
   $('navCart').onclick = openCart;
 $('savedOrdersTop').onclick = openSavedOrders;
-document.querySelectorAll('[data-order-location]').forEach(button => {
-  button.onclick = () => setOrderLocation(button.dataset.orderLocation);
-});
 
-setOrderLocation(orderLocation);
-if ($('closeSavedOrders')) {
-  $('closeSavedOrders').onclick = closeSavedOrders;
-}
-if ($('savedOrdersOverlay')) {
-  $('savedOrdersOverlay').onclick = closeSavedOrders;
-}
+$('closeSavedOrders').onclick = closeSavedOrders;
+$('savedOrdersOverlay').onclick = closeSavedOrders;
 
-if ($('saveCartOrder')) {
-  $('saveCartOrder').onclick = saveCurrentOrder;
-}
+$('saveCartOrder').onclick = saveCurrentOrder;
+   $('navImport').onclick = openImportOrder;
 
-if ($('navImport')) {
-  $('navImport').onclick = openImportOrder;
-}
+$('closeImportOrder').onclick = closeImportOrder;
+$('importOrderOverlay').onclick = closeImportOrder;
 
-if ($('closeImportOrder')) {
-  $('closeImportOrder').onclick = closeImportOrder;
-}
-
-if ($('importOrderOverlay')) {
-  $('importOrderOverlay').onclick = closeImportOrder;
-}
-
-if ($('pasteImportOrder')) {
-  $('pasteImportOrder').onclick = pasteImportOrder;
-}
-
-if ($('confirmImportOrder')) {
-  $('confirmImportOrder').onclick = importOrderFromText;
-}
+$('pasteImportOrder').onclick = pasteImportOrder;
+$('confirmImportOrder').onclick = importOrderFromText;
 
 $('navCatalog').onclick = () => {
   window.scrollTo({ top: 0, behavior: 'smooth' });
@@ -2268,15 +2220,8 @@ $('navCatalog').onclick = () => {
     openSettings();
   };
 
- const closeSettingsButton = $('closeSettings');
-if (closeSettingsButton) {
-  closeSettingsButton.onclick = closeSettings;
-}
-
-const settingsOverlay = $('settingsOverlay');
-if (settingsOverlay) {
-  settingsOverlay.onclick = closeSettings;
-}
+  $('closeSettings').onclick = closeSettings;
+  $('settingsOverlay').onclick = closeSettings;
 
   $('saveSettings').onclick = () => {
     settings = {
