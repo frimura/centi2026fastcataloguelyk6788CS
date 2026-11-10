@@ -1484,3 +1484,13 @@ main {
   font-size: 12px;
 }
 .view-order-meta:empty { display: none; }
+
+/* ===== CLICKABLE PRODUCT PICTURE ===== */
+.product-card .media {
+  cursor: pointer;
+  -webkit-tap-highlight-color: transparent;
+}
+.product-card .media:active { opacity: .8; }
+
+/* Hide the variation line in the popup when a product has none */
+#quantityProductVariation:empty { display: none; }
