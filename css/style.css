@@ -1539,3 +1539,10 @@ main {
   width: 100% !important;
   min-height: 50px !important;
 }
+.cart-actions #sendOrder:hover {
+  background: #168ac4;
+}
+
+.cart-actions #emptyCart:hover {
+  background: #ffecec;
+}
