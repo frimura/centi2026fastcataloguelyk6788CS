@@ -250,39 +250,40 @@
 </p>
 </div>
 </aside>
-    <!-- CONNECTION SETTINGS -->
-  <div id="settingsOverlay" class="overlay hidden"></div>
+ <!-- CONNECTION SETTINGS -->
+<div id="settingsOverlay" class="overlay hidden"></div>
 
-  <aside id="settingsPanel" class="cart-panel hidden" aria-label="Connection settings">
-    <div class="panel-head">
-      <strong>Connection settings</strong>
-      <button id="closeSettings" class="icon-button" type="button">×</button>
-    </div>
+<aside id="settingsPanel" class="cart-panel hidden" aria-label="Connection settings">
+  <div class="panel-head">
+    <strong>Connection settings</strong>
+    <button id="closeSettings" class="icon-button" type="button">×</button>
+  </div>
 
-    <div class="cart-items">
-      <label>
-        Apps Script Web App URL
-        <input
-          id="scriptUrl"
-          type="url"
-          placeholder="https://script.google.com/macros/s/..."
-        >
-      </label>
+  <div class="cart-items">
+    <label>
+      Apps Script Web App URL
+      <input
+        id="scriptUrl"
+        type="url"
+        placeholder="https://script.google.com/macros/s/..."
+      >
+    </label>
 
-      <label>
-        Order access PIN
-        <input
-          id="orderPin"
-          type="password"
-          placeholder="Enter PIN"
-        >
-      </label>
+    <!-- PUT THE PIN SETTING HERE -->
+    <label>
+      Order access PIN
+      <input
+        id="orderPin"
+        type="password"
+        placeholder="Enter PIN"
+      >
+    </label>
 
-      <button id="saveSettings" class="primary-button" type="button">
-        Save settings
-      </button>
-    </div>
-  </aside>
+    <button id="saveSettings" class="primary-button" type="button">
+      Save settings
+    </button>
+  </div>
+</aside>
   <!-- IMPORT ORDER -->
   <div id="importOrderOverlay" class="overlay hidden"></div>
 
