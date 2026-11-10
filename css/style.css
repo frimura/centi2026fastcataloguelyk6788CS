@@ -1400,3 +1400,142 @@ main {
 #cartPanel .cart-footer > * {
   flex-shrink: 0;
 }
+/* =========================================
+   CENTI CART ACTIONS — WHITE INTERFACE
+   ========================================= */
+
+.cart-actions {
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+  width: 100%;
+  padding: 12px 10px;
+  border: 1px solid var(--line);
+  border-radius: 17px;
+  background: #fff;
+}
+
+.cart-actions .copy-save-row {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 8px;
+  width: 100%;
+  margin: 0;
+}
+
+.cart-actions button {
+  box-sizing: border-box;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 9px;
+  width: 100%;
+  min-width: 0;
+  margin: 0;
+  font-family: inherit;
+  font-size: 14px;
+  font-weight: 700;
+  line-height: 1.2;
+  cursor: pointer;
+}
+
+.cart-actions .copy-save-row button {
+  min-height: 70px;
+  flex-direction: column;
+  gap: 8px;
+  padding: 12px 5px;
+  border: 1px solid var(--line);
+  border-radius: 13px;
+  background: #fff;
+  color: var(--ink);
+}
+
+.cart-actions .action-copy svg { color: #2789e8; }
+.cart-actions .action-save svg { color: #00b982; }
+
+.cart-actions .send-buttons-grid {
+  display: block;
+  width: 100%;
+  margin: 0;
+}
+
+.cart-actions #sendOrder {
+  min-height: 50px;
+  padding: 12px;
+  border: 0;
+  border-radius: 12px;
+  background: #229ED9;
+  color: #fff;
+  font-size: 15px;
+}
+
+.cart-actions #emptyCart {
+  min-height: 48px;
+  padding: 12px;
+  border: 1px solid #ffc5c5;
+  border-radius: 12px;
+  background: #fff7f7;
+  color: #ff2222;
+  font-size: 14px;
+}
+
+.cart-actions svg {
+  display: block;
+  flex-shrink: 0;
+}
+
+.cart-actions button:disabled {
+  opacity: .5;
+  cursor: not-allowed;
+}
+
+@media (max-width: 360px) {
+  .cart-actions { padding: 9px; gap: 10px; }
+  .cart-actions .copy-save-row button {
+    min-height: 65px;
+    font-size: 12px;
+  }
+}
+
+#cartPanel .cart-footer .cart-actions {
+  display: flex !important;
+  flex-direction: column !important;
+  align-items: stretch !important;
+  width: 100% !important;
+  max-width: none !important;
+  min-width: 0 !important;
+  flex: none !important;
+  margin: 0 !important;
+  padding: 12px !important;
+  border: 1px solid var(--line) !important;
+  border-radius: 14px !important;
+  background: #fff !important;
+  box-sizing: border-box !important;
+}
+
+#cartPanel .cart-actions .copy-save-row {
+  display: grid !important;
+  grid-template-columns: repeat(2, minmax(0, 1fr)) !important;
+  width: 100% !important;
+  gap: 10px !important;
+}
+
+#cartPanel .cart-actions .copy-save-row button {
+  width: 100% !important;
+  min-width: 0 !important;
+  min-height: 70px !important;
+  background: #fff !important;
+  color: var(--ink) !important;
+}
+
+#cartPanel .cart-actions .send-buttons-grid {
+  display: block !important;
+  width: 100% !important;
+  margin: 0 !important;
+}
+
+#cartPanel .cart-actions #sendOrder,
+#cartPanel .cart-actions #emptyCart {
+  width: 100% !important;
+  min-height: 50px !important;
+}
