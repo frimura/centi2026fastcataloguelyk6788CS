@@ -1573,3 +1573,43 @@ button.empty-cart-button {
     min-height: 58px;
   }
 }
+
+/* ===== FIX CART BUTTON SEPARATION ===== */
+
+.cart-footer {
+  display: flex !important;
+  flex-direction: column !important;
+  width: 100%;
+}
+
+.copy-save-row {
+  display: grid !important;
+  grid-template-columns: 1fr 1fr !important;
+  width: 100%;
+}
+
+.send-buttons-grid {
+  display: block !important;
+  width: 100% !important;
+  margin-top: 14px !important;
+  margin-bottom: 12px !important;
+}
+
+.send-buttons-grid #sendOrder {
+  display: flex !important;
+  width: 100% !important;
+  min-height: 60px;
+}
+
+.cart-footer #emptyCart {
+  display: flex !important;
+  width: 100% !important;
+  min-height: 52px;
+  margin-top: 0 !important;
+  margin-bottom: 14px !important;
+}
+
+/* Keep buttons visually separate */
+.send-buttons-grid + #emptyCart {
+  margin-top: 0 !important;
+}
