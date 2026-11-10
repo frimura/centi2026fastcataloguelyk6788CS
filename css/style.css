@@ -1753,3 +1753,29 @@ main {
 #cartPanel #emptyCart {
   border-radius: 10px !important;
 }
+
+/* FINAL: FORCE IDENTICAL BUTTON HEIGHTS */
+
+#cartPanel .cart-button-row > button {
+  box-sizing: border-box !important;
+
+  height: 42px !important;
+  min-height: 42px !important;
+  max-height: 42px !important;
+
+  padding: 0 6px !important;
+  margin: 0 !important;
+
+  align-self: center !important;
+  flex: none !important;
+
+  line-height: 1 !important;
+  border-radius: 10px !important;
+}
+
+/* Prevent original button styles from adding vertical space */
+#cartPanel .cart-button-row {
+  align-items: center !important;
+  grid-auto-rows: 42px !important;
+  gap: 6px !important;
+}
