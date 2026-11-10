@@ -1543,6 +1543,12 @@ function renderSavedOrders() {
         data-copy-invoice="${esc(order.id)}">
   Copy Invoice
 </button>
+<button type="button" class="view-saved" data-id="${order.id}" aria-label="View order" title="View order">
+  <svg viewBox="0 0 24 24" width="18" height="18" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+    <path d="M2 12s3.5-7 10-7 10 7 10 7-3.5 7-10 7S2 12 2 12Z"/>
+    <circle cx="12" cy="12" r="3"/>
+  </svg>
+</button>
       </div>
 
     </div>
@@ -2095,7 +2101,9 @@ window.addEventListener('popstate', () => {
   panelBackGuardActive = false;
 
   // Cart gets priority: Back must close it before exiting the app.
-  if ($('cartPanel').classList.contains('open')) {
+    if ($('viewOrderPanel') && $('viewOrderPanel').classList.contains('open')) {
+    window.closeViewOrder();
+  } else if ($('cartPanel').classList.contains('open')) {
     closeCart();
   } else if (!$('quantityPanel').classList.contains('hidden')) {
     closeQuantitySelector();
@@ -2380,3 +2388,67 @@ function initializeApp() {
 }
 
 initializeApp();
+
+(function initViewOrder() {
+  const $ = (id) => document.getElementById(id);
+  const panel = $('viewOrderPanel');
+  const overlay = $('viewOrderOverlay');
+
+  function openViewOrder(order) {
+    const items = order.items || order.cart || [];
+    let total = 0;
+
+    $('viewOrderTitle').textContent = order.name || 'Order';
+    $('viewOrderSubtitle').textContent = `${items.length} different products`;
+
+    $('viewOrderItems').innerHTML = items.map(it => {
+      const qty = Number(it.qty ?? it.quantity ?? 1);
+      const price = Number(it.price ?? 0);
+      const line = qty * price;
+      total += line;
+      const img = it.image || it.imageUrl || '';
+      return `
+        <div class="cart-row">
+          <div class="cart-row-main">
+            ${img
+              ? `<img class="cart-product-image" src="${esc(img)}" alt="">`
+              : `<div class="cart-image-placeholder">▧</div>`}
+            <div class="cart-product-info">
+              <strong>${esc(it.name)}</strong>
+              <small>SKU: ${esc(it.sku)}</small>
+              <small>${qty} × ${money(price)}</small>
+            </div>
+          </div>
+          <div class="cart-row-price">${money(line)}</div>
+        </div>`;
+    }).join('') || '<div class="empty"><strong>This order is empty</strong></div>';
+
+    $('viewOrderTotal').textContent = money(order.total ?? total);
+        $('viewOrderMeta').innerHTML = [order.orderLocation, order.customerType, order.requesterName]
+      .filter(Boolean).map(esc).join(' · ');
+    activatePanelBackGuard();
+    overlay.classList.remove('hidden');
+    panel.classList.add('open');
+    panel.setAttribute('aria-hidden', 'false');
+  }
+
+  function closeViewOrder() {
+    overlay.classList.add('hidden');
+    panel.classList.remove('open');
+    panel.setAttribute('aria-hidden', 'true');
+       window.closeViewOrder = closeViewOrder;
+  }
+
+  $('savedOrdersList').addEventListener('click', (e) => {
+    const btn = e.target.closest('.view-saved');
+    if (!btn) return;
+    const order = savedOrders.find(o => String(o.id) === String(btn.dataset.id)); // <-- ADJUST
+    if (order) openViewOrder(order);
+  });
+
+  $('closeViewOrder').addEventListener('click', closeViewOrder);
+  overlay.addEventListener('click', closeViewOrder);
+  document.addEventListener('keydown', (e) => {
+    if (e.key === 'Escape' && panel.classList.contains('open')) closeViewOrder();
+  });
+})();
