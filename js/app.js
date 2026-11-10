@@ -1268,7 +1268,18 @@ function saveCart() {
 function cartValues() {
   return Object.values(cart).filter(item => item.qty > 0);
 }
+function setOrderLocation(location) {
+  if (!['Pusat', 'Cabang Solo'].includes(location)) return;
 
+  orderLocation = location;
+  localStorage.setItem(ORDER_LOCATION_KEY, location);
+
+  document.querySelectorAll('[data-order-location]').forEach(button => {
+    const active = button.dataset.orderLocation === orderLocation;
+    button.classList.toggle('is-active', active);
+    button.setAttribute('aria-pressed', String(active));
+  });
+}
 function updateCartBadge() {
   const count = cartValues().reduce((sum, item) => sum + item.qty, 0);
 
@@ -1450,9 +1461,10 @@ const order = {
   invoiceNumber: 'INV-' + savedAt.getTime(),
     name: cleanName,
     createdAt: new Date().toISOString(),
-    requesterName,
+        requesterName,
     customerType: $('customerType').value,
-   
+    orderLocation,
+
     items: JSON.parse(JSON.stringify(items)),
     total: items.reduce(
       (sum, item) => sum + item.price * item.qty, 0
@@ -1723,8 +1735,8 @@ function loadSavedOrder(id) {
     };
   });
 
-  $('customerType').value = order.customerType || '';
-  
+   $('customerType').value = order.customerType || '';
+  setOrderLocation(order.orderLocation || 'Pusat');
 
   saveCart();
 
@@ -1785,8 +1797,9 @@ function orderText() {
   const lines = [
     `New Order: ${id}`,
     '---------------------------------',
-    'Pelanggan: Catalog Order',
+        'Pelanggan: Catalog Order',
     `Requested by: ${requesterName || 'Unknown'}`,
+    `Lokasi: ${orderLocation}`,
     'No : Mobile Catalog',
     '',
     'Pesanan :'
@@ -1828,6 +1841,7 @@ async function sendOrder() {
   }
 
   order.customerType = customerType;
+  order.orderLocation = orderLocation;
 
    await navigator.clipboard.writeText(order.text).catch(error => {
   console.warn('Order clipboard copy failed:', error);
@@ -2188,7 +2202,11 @@ function bindEvents() {
   $('cartTop').onclick = openCart;
   $('navCart').onclick = openCart;
 $('savedOrdersTop').onclick = openSavedOrders;
+document.querySelectorAll('[data-order-location]').forEach(button => {
+  button.onclick = () => setOrderLocation(button.dataset.orderLocation);
+});
 
+setOrderLocation(orderLocation);
 if ($('closeSavedOrders')) {
   $('closeSavedOrders').onclick = closeSavedOrders;
 }
