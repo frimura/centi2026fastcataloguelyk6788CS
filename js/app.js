@@ -2622,7 +2622,12 @@ initializeApp();
             `).join('')}
           </div>
 
-          <div style="display:grid;grid-template-columns:1fr 1fr;gap:8px;margin-top:18px">
+                   <button type="button" data-nota-wa
+            style="width:100%;margin-top:18px;padding:12px;border:0;border-radius:10px;
+                   background:#25d366;color:#fff;font-weight:700;cursor:pointer">
+            Kirim ke WhatsApp
+          </button>
+          <div style="display:grid;grid-template-columns:1fr 1fr;gap:8px;margin-top:10px">
             <button type="button" data-nota-cancel
               style="padding:12px;border:1px solid #e7eaf0;border-radius:10px;
                      background:#fff;font-weight:700;cursor:pointer">Batal</button>
@@ -2681,6 +2686,14 @@ initializeApp();
         resolve(value);
       };
       window.closeNotaPopup = () => close(null, true);
+             overlay.querySelector('[data-nota-wa]').addEventListener('click', () =>
+        close({
+          name: input.value.trim(),
+          payment,
+          customerType: overlay.querySelector('#notaTypeSelect').value,
+          docType,
+          action: 'whatsapp'
+        }));
       overlay.querySelector('[data-nota-cancel]')
         .addEventListener('click', () => close(null));
       overlay.querySelector('[data-nota-ok]')
@@ -2909,9 +2922,79 @@ initializeApp();
 
     return pages.map((p, i) => drawPage(p, i, pages.length, logo, data));
   }
+  /* ---------- share sheet + WhatsApp ---------- */
+  const WA_NUMBER = '6287877888865';
 
+  function buildText(d) {
+    const no = String(d.invoiceNumber || '').replace(/\D/g, '') || getCartNo();
+    const lines = [
+      `New Order: CAT-${no}`,
+      '---------------------------------',
+      `Pelanggan: ${d.customerType || 'Unknown'}`,
+      `Requested by: ${d.requesterName || requesterName || 'Unknown'}`,
+      `Lokasi: ${d.orderLocation || orderLocation}`,
+      'No : Mobile Catalog',
+      '',
+      'Pesanan :'
+    ];
+    d.items.forEach(it => lines.push(
+      '',
+      `${it.qty}x ${it.name}`,
+      `  SKU: ${it.sku}`,
+      `  Price: ${money(it.price)}`
+    ));
+    lines.push('', `Total : ${money(d.total)}`);
+    return lines.join('\n');
+  }
+
+  function toFiles(canvases, data) {
+    const prefix = String(data.invoiceNumber || 'nota').replace(
+      /^INV-/, data.docType === 'Invoice' ? 'INV-' : 'NOT-');
+    return Promise.all(canvases.map((c, i) => new Promise(resolve =>
+      c.toBlob(b => resolve(new File(
+        [b],
+        `${prefix}${canvases.length > 1 ? '-' + (i + 1) : ''}.png`,
+        { type: 'image/png' }
+      )), 'image/png')
+    )));
+  }
+
+  async function shareFiles(canvases, data) {
+    try {
+      const files = await toFiles(canvases, data);
+      if (!navigator.canShare || !navigator.canShare({ files })) return false;
+      await navigator.share({ files });
+      return true;
+    } catch (error) {
+      return error && error.name === 'AbortError';   // user closed the sheet
+    }
+  }
+
+  async function sendWhatsApp(canvases, data) {
+    let copied = false;
+    try {
+      const blob = await new Promise(r => canvases[0].toBlob(r, 'image/png'));
+      await navigator.clipboard.write([new ClipboardItem({ 'image/png': blob })]);
+      copied = true;
+    } catch (error) {
+      console.warn('Image copy failed:', error);
+    }
+
+    showToast(copied
+      ? 'Gambar nota disalin. Tempel di chat WhatsApp'
+      : 'Gambar tidak bisa disalin');
+
+    setTimeout(() => {
+      window.location.href =
+        `https://wa.me/${WA_NUMBER}?text=${encodeURIComponent(buildText(data))}`;
+    }, 700);
+  }
+   
   /* ---------- print ---------- */
-  async function printPages(canvases) {
+    async function printPages(canvases, data) {
+    if (data && window.matchMedia('(pointer: coarse)').matches) {
+      if (await shareFiles(canvases, data)) return;
+    }
     const old = document.getElementById('notaPrintArea');
     if (old) old.remove();
 
@@ -2955,7 +3038,13 @@ initializeApp();
                 payment: details.payment,
         docType: details.docType
       });
-      await printPages(pages);
+            const merged = {
+        ...base,
+        customerType: details.customerType,
+        docType: details.docType
+      };
+      if (details.action === 'whatsapp') await sendWhatsApp(pages, merged);
+      else await printPages(pages, merged);
     } catch (error) {
       console.error('Nota failed:', error);
       showToast('Gagal membuat nota');
@@ -2969,7 +3058,9 @@ initializeApp();
     runNota({
       items: order.items,
       total: order.total,
-      customerType: order.customerType,
+            customerType: order.customerType,
+      requesterName: order.requesterName,
+      orderLocation: order.orderLocation,
       createdAt: order.createdAt,
       invoiceNumber: order.invoiceNumber ||
         'INV-' + String(order.id).replace('SAVED-', '')
