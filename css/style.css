@@ -1546,3 +1546,38 @@ main {
 .cart-actions #emptyCart:hover {
   background: #ffecec;
 }
+/* Order location selector */
+.order-location-toggle {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 6px;
+  width: 100%;
+  padding: 4px;
+  border: 1px solid var(--line);
+  border-radius: 11px;
+  background: #f3f5f8;
+}
+
+.order-location-option {
+  min-height: 40px;
+  padding: 8px 12px;
+  border: 1px solid transparent;
+  border-radius: 8px;
+  background: transparent;
+  color: var(--muted);
+  font-size: 13px;
+  font-weight: 650;
+  transition: background .15s, color .15s, box-shadow .15s;
+}
+
+.order-location-option.is-active {
+  border-color: #dce8e2;
+  background: #fff;
+  color: var(--green-dark);
+  box-shadow: 0 1px 4px rgba(20, 31, 52, .09);
+}
+
+.order-location-option:focus-visible {
+  outline: 2px solid var(--green);
+  outline-offset: 2px;
+}
