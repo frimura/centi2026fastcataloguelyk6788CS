@@ -2022,7 +2022,7 @@ function openSettings() {
 
   $('scriptUrl').value = settings.scriptUrl || '';
   $('orderPin').value = settings.pin || '';
-}
+
 
 function closeSettings() {
   $('settingsOverlay').classList.add('hidden');
