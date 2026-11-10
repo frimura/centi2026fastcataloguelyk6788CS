@@ -1193,63 +1193,32 @@ main {
   line-height: 1;
 }
 
-/* =========================================================
-   FINAL CART FOOTER & ORDER BUTTON LAYOUT
-   ========================================================= */
 
-.cart-footer {
+/* =========================================
+   CENTI CART ACTIONS
+   ========================================= */
+
+.cart-actions {
   display: flex;
   flex-direction: column;
-  align-items: stretch;
+  gap: 12px;
   width: 100%;
-  padding: 12px 17px calc(14px + env(safe-area-inset-bottom));
-  border-top: 1px solid var(--line);
-  background: var(--white);
+  padding: 12px 10px;
+  border: 1px solid #292929;
+  border-radius: 17px;
+  background: #050505;
 }
 
-.cart-footer .total-line {
-  display: flex;
-  align-items: center;
-  justify-content: space-between;
-  width: 100%;
-  margin: 0 0 12px;
-}
-
-.cart-footer .routing-field {
-  width: 100%;
-  min-width: 0;
-  margin-bottom: 10px;
-}
-
-.cart-footer .destination-label {
-  display: block;
-  margin: 0 0 5px;
-  font-size: 13px;
-  font-weight: 650;
-}
-
-.cart-footer .destination-select {
-  display: block;
-  width: 100%;
-  min-height: 48px;
-  padding: 9px 12px;
-  border: 1px solid var(--line);
-  border-radius: 11px;
-  background: var(--white);
-  color: var(--ink);
-  font-size: 14px;
-}
-
-/* Copy + Save: side by side */
-.cart-footer .copy-save-row {
+/* Copy and Save */
+.cart-actions .copy-save-row {
   display: grid;
   grid-template-columns: repeat(2, minmax(0, 1fr));
-  gap: 10px;
+  gap: 8px;
   width: 100%;
-  margin: 8px 0 0;
+  margin: 0;
 }
 
-.cart-footer .copy-save-row button {
+.cart-actions button {
   box-sizing: border-box;
   display: flex;
   align-items: center;
@@ -1257,117 +1226,90 @@ main {
   gap: 9px;
   width: 100%;
   min-width: 0;
-  min-height: 58px;
-  height: auto;
   margin: 0;
-  padding: 10px 8px;
-  border: 1px solid var(--line);
-  border-radius: 14px;
-  background: var(--white);
+  font-family: inherit;
   font-size: 14px;
   font-weight: 700;
   line-height: 1.2;
+  cursor: pointer;
 }
 
-.cart-footer .action-copy { color: #2563a8; }
-.cart-footer .action-save { color: #16845f; }
+.cart-actions .copy-save-row button {
+  min-height: 84px;
+  flex-direction: column;
+  gap: 8px;
+  padding: 12px 5px;
+  border: 1px solid #292929;
+  border-radius: 13px;
+  background: #050505;
+  color: #e5e5e5;
+}
 
-.cart-footer .copy-save-row svg,
-.cart-footer .send-buttons-grid svg,
-.cart-footer #emptyCart svg {
+.cart-actions .action-copy svg {
+  color: #2789e8;
+}
+
+.cart-actions .action-save svg {
+  color: #00b982;
+}
+
+/* Telegram */
+.cart-actions .send-buttons-grid {
   display: block;
-  flex: 0 0 auto;
-}
-
-/* Telegram: its own full-width row */
-.cart-footer .send-buttons-grid {
-  display: grid;
-  grid-template-columns: minmax(0, 1fr);
-  gap: 0;
   width: 100%;
-  margin: 14px 0 12px;
-}
-
-.cart-footer .send-buttons-grid #sendOrder {
-  box-sizing: border-box;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  gap: 10px;
-  width: 100%;
-  min-width: 0;
-  min-height: 60px;
-  height: auto;
   margin: 0;
+}
+
+.cart-actions #sendOrder {
+  min-height: 50px;
   padding: 12px;
   border: 0;
-  border-radius: 15px;
+  border-radius: 12px;
   background: #229ED9;
   color: #fff;
   font-size: 15px;
-  font-weight: 700;
-  line-height: 1.2;
-  box-shadow: 0 3px 8px rgba(34, 158, 217, .18);
 }
 
-.cart-footer .send-buttons-grid #sendOrder:hover {
+.cart-actions #sendOrder:hover {
   background: #168ac4;
 }
 
-.cart-footer .send-buttons-grid #sendOrder:disabled {
-  opacity: .55;
+/* Empty cart */
+.cart-actions #emptyCart {
+  min-height: 52px;
+  padding: 12px;
+  border: 1px solid #ffc5c5;
+  border-radius: 12px;
+  background: #fff7f7;
+  color: #ff2222;
+  font-size: 14px;
+}
+
+.cart-actions #emptyCart:hover {
+  background: #ffecec;
+}
+
+/* SVG alignment */
+.cart-actions svg {
+  display: block;
+  flex-shrink: 0;
+}
+
+/* Disabled state */
+.cart-actions button:disabled {
+  opacity: .5;
   cursor: not-allowed;
 }
 
-/* Empty cart: separate full-width row below Telegram */
-.cart-footer > #emptyCart {
-  box-sizing: border-box;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  gap: 9px;
-  width: 100%;
-  min-width: 0;
-  min-height: 52px;
-  height: auto;
-  margin: 0 0 12px;
-  padding: 10px 12px;
-  border: 1px solid #fecaca;
-  border-radius: 14px;
-  background: #fff7f7;
-  color: #dc2626;
-  font-size: 14px;
-  font-weight: 700;
-  line-height: 1.2;
-}
-
-.cart-footer > #emptyCart:hover {
-  background: #feecec;
-  border-color: #fca5a5;
-}
-
-.cart-footer > #emptyCart:active { background: #fee2e2; }
-
-/* Footer note */
-.cart-footer .footnote {
-  width: 100%;
-  margin: 0;
-  color: var(--muted);
-  font-size: 10px;
-  line-height: 1.45;
-}
-
-/* Small screens */
-@media (max-width: 480px) {
-  .cart-footer {
-    padding-left: 17px;
-    padding-right: 17px;
+/* Mobile adjustments */
+@media (max-width: 360px) {
+  .cart-actions {
+    padding: 9px;
+    gap: 10px;
   }
 
-  .cart-footer .copy-save-row { gap: 8px; }
-
-  .cart-footer .copy-save-row button {
-    min-height: 56px;
-    font-size: 13px;
+  .cart-actions .copy-save-row button {
+    min-height: 76px;
+    font-size: 12px;
   }
 }
