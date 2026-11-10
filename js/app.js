@@ -250,7 +250,6 @@ if (importNav) {
   setButtonLabel('sendOrder', t('sendTelegram'));
 setButtonLabel('copyOrder', t('copyOrder'));
 setButtonLabel('emptyCart', t('emptyCart'));
-   const $ = id => document.getElementById(id);
   $('saveSettings').textContent = t('saveSettings');
 
   const settingsLabels = $('settingsPanel').querySelectorAll('label');
