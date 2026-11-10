@@ -285,6 +285,7 @@ let requesterName = readStorage(CONFIG.identityKey, '');
 
 let toastTimer;
 let searchTimer;
+let previousSearchQuery = '';
 let refreshTimer = null;
 let catalogRequest = null;
 let selectedProduct = null;
