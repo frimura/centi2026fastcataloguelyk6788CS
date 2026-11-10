@@ -1299,3 +1299,68 @@ main {
   padding-left: 14px !important;
   padding-right: 14px !important;
 }
+/* Fix: flatten the new wrapper so buttons use the 2x2 grid */
+#cartPanel .cart-button-row {
+  display: contents !important;
+}
+
+/* Button styling */
+#cartPanel .cart-actions button {
+  border: 1px solid var(--line);
+  background: var(--white);
+  color: var(--ink);
+  font-weight: 700;
+  transition: background .15s, transform .05s;
+}
+
+#cartPanel .cart-actions button:active {
+  transform: scale(.98);
+}
+
+/* Save Order: primary green */
+#cartPanel #saveCartOrder {
+  border-color: var(--green);
+  background: var(--green);
+  color: var(--white);
+}
+#cartPanel #saveCartOrder:active { background: var(--green-dark); }
+
+/* Send to Telegram: dark */
+#cartPanel #sendOrder {
+  border-color: #111827;
+  background: #111827;
+  color: var(--white);
+}
+
+/* Copy order text: neutral outline */
+#cartPanel #copyOrder:active { background: var(--bg); }
+
+/* Empty cart: red outline */
+#cartPanel #emptyCart {
+  border-color: #dc2626;
+  background: transparent;
+  color: #dc2626;
+}
+#cartPanel #emptyCart:not(:disabled):active { background: #fef2f2; }
+
+/* Customer type select */
+#cartPanel .destination-select {
+  padding: 0 10px;
+  border: 1px solid var(--line);
+  border-radius: 11px;
+  background: var(--white);
+  color: var(--ink);
+  font-size: 12px;
+  font-weight: 650;
+}
+#cartPanel .destination-select:focus-visible {
+  outline: 2px solid var(--green);
+  outline-offset: 2px;
+}
+
+/* Slightly larger label and more readable text */
+#cartPanel .destination-label {
+  color: var(--muted);
+  font-weight: 700;
+}
+#cartPanel .cart-actions button { font-size: 11px !important; }
