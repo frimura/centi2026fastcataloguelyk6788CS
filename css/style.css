@@ -1313,3 +1313,90 @@ main {
     font-size: 12px;
   }
 }
+
+/* =========================================
+   FIX CART FOOTER WIDTH AND BUTTON POSITION
+   ========================================= */
+
+/* Force every footer element into one vertical column */
+#cartPanel .cart-footer {
+  display: flex !important;
+  flex-direction: column !important;
+  align-items: stretch !important;
+  justify-content: flex-start !important;
+  width: 100% !important;
+  max-width: none !important;
+  box-sizing: border-box !important;
+}
+
+/* Total */
+#cartPanel .cart-footer .total-line {
+  width: 100% !important;
+  flex: none !important;
+}
+
+/* Customer selection */
+#cartPanel .cart-footer .routing-field {
+  width: 100% !important;
+  flex: none !important;
+}
+
+/* Entire button container */
+#cartPanel .cart-footer .cart-actions {
+  display: flex !important;
+  flex-direction: column !important;
+  align-items: stretch !important;
+  width: 100% !important;
+  max-width: none !important;
+  min-width: 0 !important;
+  flex: none !important;
+  margin: 0 !important;
+  padding: 12px !important;
+  box-sizing: border-box !important;
+}
+
+/* Copy and Save */
+#cartPanel .cart-actions .copy-save-row {
+  display: grid !important;
+  grid-template-columns: repeat(2, minmax(0, 1fr)) !important;
+  width: 100% !important;
+  gap: 10px !important;
+}
+
+#cartPanel .cart-actions .copy-save-row button {
+  width: 100% !important;
+  min-width: 0 !important;
+  min-height: 84px !important;
+}
+
+/* Telegram */
+#cartPanel .cart-actions .send-buttons-grid {
+  display: block !important;
+  width: 100% !important;
+  margin: 0 !important;
+}
+
+#cartPanel .cart-actions #sendOrder {
+  width: 100% !important;
+  min-height: 52px !important;
+}
+
+/* Empty cart */
+#cartPanel .cart-actions #emptyCart {
+  width: 100% !important;
+  min-height: 52px !important;
+}
+
+/* Footer note must be below the buttons */
+#cartPanel .cart-footer > .footnote {
+  display: block !important;
+  width: 100% !important;
+  max-width: none !important;
+  flex: none !important;
+  margin: 10px 0 0 !important;
+}
+
+/* Prevent children from shrinking */
+#cartPanel .cart-footer > * {
+  flex-shrink: 0;
+}
