@@ -250,6 +250,84 @@
 </p>
 </div>
 </aside>
+    <!-- CONNECTION SETTINGS -->
+  <div id="settingsOverlay" class="overlay hidden"></div>
+
+  <aside id="settingsPanel" class="cart-panel hidden" aria-label="Connection settings">
+    <div class="panel-head">
+      <strong>Connection settings</strong>
+      <button id="closeSettings" class="icon-button" type="button">×</button>
+    </div>
+
+    <div class="cart-items">
+      <label>
+        Apps Script Web App URL
+        <input
+          id="scriptUrl"
+          type="url"
+          placeholder="https://script.google.com/macros/s/..."
+        >
+      </label>
+
+      <label>
+        Order access PIN
+        <input
+          id="orderPin"
+          type="password"
+          placeholder="Enter PIN"
+        >
+      </label>
+
+      <button id="saveSettings" class="primary-button" type="button">
+        Save settings
+      </button>
+    </div>
+  </aside>
+  <!-- IMPORT ORDER -->
+  <div id="importOrderOverlay" class="overlay hidden"></div>
+
+  <aside id="importOrderPanel" class="cart-panel" aria-hidden="true">
+    <div class="panel-head">
+      <strong>Import Order</strong>
+      <button id="closeImportOrder" class="icon-button" type="button">×</button>
+    </div>
+
+    <div class="cart-items">
+      <label for="importOrderText">Paste order text</label>
+
+      <textarea
+        id="importOrderText"
+        rows="12"
+        placeholder="Paste your New Order text here..."
+      ></textarea>
+
+      <button id="pasteImportOrder" type="button">
+        Paste from clipboard
+      </button>
+
+      <button
+        id="confirmImportOrder"
+        class="primary-button"
+        type="button"
+      >
+        Import Order
+      </button>
+    </div>
+  </aside>
+    <!-- SAVED ORDERS -->
+  <div id="savedOrdersOverlay" class="overlay hidden"></div>
+
+  <aside id="savedOrdersPanel" class="cart-panel" aria-hidden="true">
+    <div class="panel-head">
+      <div>
+        <strong>Saved Orders</strong>
+        <small id="savedOrdersSubtitle">0 saved orders</small>
+      </div>
+      <button id="closeSavedOrders" class="icon-button" type="button">×</button>
+    </div>
+
+    <div id="savedOrdersList" class="cart-items"></div>
+  </aside>
   
   <div id="toast" class="toast" role="status"></div>
   <script src="js/search.js"></script>
