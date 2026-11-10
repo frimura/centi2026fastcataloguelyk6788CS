@@ -281,6 +281,8 @@ let products = [];
 let cart = readStorage(CONFIG.cartKey, {});
 let settings = readStorage(CONFIG.settingsKey, {});
 let savedOrders = readStorage(CONFIG.savedOrdersKey, []);
+let requesterName = readStorage(CONFIG.identityKey, '');
+
 let toastTimer;
 let searchTimer;
 let refreshTimer = null;
