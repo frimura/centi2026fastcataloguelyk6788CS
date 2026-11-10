@@ -46,12 +46,10 @@ const LANG = {
     yourOrder: 'Your order',
     differentProducts: 'different products',
     total: 'Total',
-    destinationPC: 'Destination PC',
-    selectPC: 'Select PC',
     customerType: 'Customer type',
     selectCustomer: 'Select customer',
-    sendToPC: 'Send to PC',
-    selectPCFirst: 'Select a PC first',
+   
+    
     sendTelegram: 'Send to Telegram',
     copyOrder: 'Copy order text',
     emptyCart: 'Empty cart',
@@ -71,25 +69,25 @@ const LANG = {
     confirmEmpty: 'Are you sure you want to remove all products from your cart?',
     selectName: 'Select your name before sending an order',
     selectCustomerFirst: 'Please select a customer type',
-    selectDestination: 'Please select a destination PC',
+    
     setURL: 'Set your Apps Script URL first',
     enterPIN: 'Enter the order access PIN',
     orderTooLong: 'Order is too long. Copy it instead.',
     telegramTooLong: 'Order is too long for the secure bot request. Copy it instead.',
     confirmTelegram: 'CONFIRM TELEGRAM ORDER',
-    confirmPC: 'CONFIRM PC ORDER',
+    
     destination: 'Destination',
-    listenerID: 'Listener ID',
+    
     confirmSend: 'Are you sure you want to send this order?',
     sending: 'Sending…',
-    sendingPC: 'Sending to PC…',
+    
     sentTelegram: 'Order sent to Telegram',
-    sentToPC: 'Order sent to',
+    
     orderCopied: 'Order copied',
     copyUnavailable: 'Clipboard unavailable in this browser',
     settingsSaved: 'Settings saved',
     orderFailed: 'Send failed',
-    routingFailed: 'PC routing failed',
+    
     catalogUnavailable: 'Catalog unavailable',
     first160: 'Showing first 160 matches. Refine your search to narrow results.',
     close: 'Close',
@@ -97,9 +95,9 @@ const LANG = {
     each: 'each',
     productsLoaded: 'products loaded',
     offline: 'offline',
-    unknownPC: 'Unknown PC',
+    
     telegramRejected: 'Telegram rejected the order',
-    pcFailed: 'PC routing failed',
+    
     usingSavedCatalog: 'Using saved catalog',
     refreshFailed: 'Refresh failed',
     connectingSheets: 'Connecting to Google Sheets…',
@@ -248,14 +246,6 @@ if (importNav) {
 
   $('cartPanel').querySelector('.total-line span').textContent = t('total');
 
-  document.querySelector('label[for="listenerDestination"]').textContent =
-    t('destinationPC');
-
-  document.querySelector('label[for="customerType"]').textContent =
-    t('customerType');
-
-  $('listenerDestination').options[0].textContent = t('selectPC');
-  $('customerType').options[0].textContent = t('selectCustomer');
 
   $('sendOrder').textContent = t('sendTelegram');
   $('copyOrder').textContent = t('copyOrder');
@@ -273,7 +263,7 @@ if (importNav) {
   updateRequesterBadge();
   renderProducts();
   renderCart();
-  updatePCButton();
+
 }
 
 /* =========================================================
@@ -1379,7 +1369,7 @@ items.forEach(item => {
   );
 
  $('sendOrder').disabled = !items.length;
-updatePCButton();
+
 $('copyOrder').disabled = !items.length;
 $('emptyCart').disabled = !items.length;
 $('saveCartOrder').disabled = !items.length;
@@ -1462,7 +1452,7 @@ const order = {
     createdAt: new Date().toISOString(),
     requesterName,
     customerType: $('customerType').value,
-    listenerDestination: $('listenerDestination').value,
+   
     items: JSON.parse(JSON.stringify(items)),
     total: items.reduce(
       (sum, item) => sum + item.price * item.qty, 0
@@ -1734,8 +1724,7 @@ function loadSavedOrder(id) {
   });
 
   $('customerType').value = order.customerType || '';
-  $('listenerDestination').value =
-    order.listenerDestination || '';
+  
 
   saveCart();
 
@@ -1781,33 +1770,6 @@ function closeSavedOrders() {
 /* =========================================================
    13. ORDER GENERATION AND TELEGRAM
    ========================================================= */
-
-function getListenerName(listenerId) {
-  const names = {
-    'CENTI-PC': 'PC DEPAN',
-    'CENTI-CS-1': 'BUDI',
-    'CENTI-CS-2': 'RAUF',
-    'CENTI-SOLO-MEGA': 'SOLO MEGABOOK',
-    'FRISKY-PC': 'FRISKY-NITRO'
-  };
-
-  return names[listenerId] || t('unknownPC');
-}
-
-function updatePCButton() {
-  const listenerId = $('listenerDestination').value;
-  const customerType = $('customerType').value;
-  const button = $('sendToPC');
-
-  button.textContent = listenerId
-    ? `${t('sendToPC')} · ${getListenerName(listenerId)}`
-    : t('selectPCFirst');
-
-  button.disabled =
-    !listenerId ||
-    !customerType ||
-    !cartValues().length;
-}
 
 function orderText() {
   const items = cartValues();
@@ -1920,9 +1882,6 @@ if (!response.ok || !result.ok) {
   throw new Error(result.error || t('telegramRejected'));
 }
 
-    if (!result.ok) {
-      throw new Error(result.error || t('telegramRejected'));
-    }
 
     showToast(t('sentTelegram'));
 
@@ -1938,109 +1897,6 @@ if (!response.ok || !result.ok) {
   }
 }
 
-async function sendToPC() {
-  if (!REQUESTER_NAMES.includes(requesterName)) {
-    showRequesterPrompt();
-    showToast(t('selectName'));
-    return;
-  }
-
-  const order = orderText();
-  const customerType = $('customerType').value;
-
-  if (!customerType) {
-    showToast(t('selectCustomerFirst'));
-    return;
-  }
-
-  order.customerType = customerType;
-   await navigator.clipboard.writeText(order.text).catch(error => {
-  console.warn('Order clipboard copy failed:', error);
-});
-
-  const url = (settings.scriptUrl || '').trim();
-  const pin = (settings.pin || '').trim();
-  const listenerId = $('listenerDestination').value;
-
-  if (!url) {
-    openSettings();
-    showToast(t('setURL'));
-    return;
-  }
-
-  if (!pin) {
-    openSettings();
-    showToast(t('enterPIN'));
-    return;
-  }
-
-  if (!listenerId) {
-    showToast(t('selectDestination'));
-    return;
-  }
-
-  const destinationName = getListenerName(listenerId);
-
-  if (!confirm(
-    t('confirmPC') + '\n\n' +
-    t('destination') + ': ' + destinationName + '\n' +
-    t('listenerID') + ': ' + listenerId + '\n\n' +
-    t('confirmSend')
-  )) {
-    return;
-  }
-
-  if (order.text.length > 1500) {
-    showToast(t('orderTooLong'));
-    return;
-  }
-
-  const button = $('sendToPC');
-  button.disabled = true;
-  button.textContent = t('sendingPC');
-
-  try {
-    const response = await fetch(
-  'https://rtvxegwgcjoxcmmojhqk.supabase.co/functions/v1/listener-gateway',
-  {
-    method: 'POST',
-    headers: {
-      'Content-Type': 'application/json',
-      'apikey': 'sb_publishable_but9O4L_QdZiTDU01hVn7w_UJ3VAYa6',
-      'Authorization': 'Bearer sb_publishable_but9O4L_QdZiTDU01hVn7w_UJ3VAYa6'
-    },
-    body: JSON.stringify({
-      action: 'route',
-      pin,
-      listenerId,
-      payload: order
-    })
-  }
-);
-
-const result = await response.json();
-
-if (!response.ok || !result.ok) {
-  throw new Error(result.error || 'Could not route order');
-}
-
-    if (!result.ok) {
-      throw new Error(result.error || t('pcFailed'));
-    }
-
-    showToast(`${t('sentToPC')} ${result.deviceName || destinationName}`);
-
-    cart = {};
-    saveCart();
-    closeCart();
-
-  } catch (error) {
-    showToast(`${t('routingFailed')}: ${error.message}`);
-  } finally {
-    button.disabled = false;
-    updatePCButton();
-  }
-}
 function openImportOrder() {
   activatePanelBackGuard();
   $('importOrderOverlay').classList.remove('hidden');
@@ -2337,10 +2193,6 @@ $('navCatalog').onclick = () => {
   $('cartOverlay').onclick = closeCart;
 
   $('sendOrder').onclick = sendOrder;
-  $('sendToPC').onclick = sendToPC;
-
-  $('listenerDestination').addEventListener('change', updatePCButton);
-  $('customerType').addEventListener('change', updatePCButton);
 
   $('copyOrder').onclick = copyOrder;
   $('emptyCart').onclick = emptyCart;
