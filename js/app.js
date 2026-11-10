@@ -796,7 +796,7 @@ function renderProducts() {
 
   host.innerHTML = list.slice(0, 160).map(product => `
     <article class="product-card">
-      <div class="media">
+      <div class="media" data-add="${esc(product.sku)}">
         ${
           product.image
             ? `<img
@@ -813,12 +813,6 @@ function renderProducts() {
       <div class="product-info">
         <div class="product-name">
           ${esc(product.short || product.name || product.sku)}
-        </div>
-
-        <div class="product-sku">${t('sku')}: ${esc(product.sku)}</div>
-
-        <div class="product-variation">
-          ${esc(product.variation || product.notes || '')}
         </div>
 
         <div class="product-price">${money(product.price)}</div>
@@ -897,6 +891,8 @@ function openQuantitySelector(sku) {
     product.short || product.name || product.sku;
 
   $('quantityProductSku').textContent = `${t('sku')}: ${product.sku}`;
+     $('quantityProductVariation').textContent =
+    product.variation || product.notes || '';
   $('quantityProductPrice').textContent = money(product.price);
    let modalStock = $('quantityModalStock');
 
