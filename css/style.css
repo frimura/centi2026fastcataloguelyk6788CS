@@ -1353,6 +1353,7 @@ main {
   margin: 0 !important;
   padding: 12px !important;
   box-sizing: border-box !important;
+   margin-top: 12px !important;
 }
 
 /* Copy and Save */
