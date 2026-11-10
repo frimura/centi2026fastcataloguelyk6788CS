@@ -1270,10 +1270,32 @@ function addToCart(sku, quantity = 1) {
 
 function saveCart() {
   writeStorage(CONFIG.cartKey, cart);
+  if (!cartValues().length) setCartNo('');
   updateCartBadge();
   renderCart();
 }
+const CART_NO_KEY = 'centi_catalog_cart_no_v1';
 
+function newOrderNo() {
+  const d = new Date();
+  const p = n => String(n).padStart(2, '0');
+  return d.getFullYear() + p(d.getMonth() + 1) + p(d.getDate()) +
+         p(d.getHours()) + p(d.getMinutes()) + p(d.getSeconds());
+}
+
+function getCartNo() {
+  let no = localStorage.getItem(CART_NO_KEY);
+  if (!no) {
+    no = newOrderNo();
+    localStorage.setItem(CART_NO_KEY, no);
+  }
+  return no;
+}
+
+function setCartNo(no) {
+  if (no) localStorage.setItem(CART_NO_KEY, no);
+  else localStorage.removeItem(CART_NO_KEY);
+}
 function cartValues() {
   return Object.values(cart).filter(item => item.qty > 0);
 }
@@ -1468,7 +1490,8 @@ const orderId = 'SAVED-' + savedAt.getTime();
 
 const order = {
   id: orderId,
-  invoiceNumber: 'INV-' + savedAt.getTime(),
+    orderNo: getCartNo(),
+  invoiceNumber: 'INV-' + getCartNo(),
     name: cleanName,
     createdAt: new Date().toISOString(),
         requesterName,
@@ -1761,6 +1784,7 @@ function loadSavedOrder(id) {
 
    $('customerType').value = order.customerType || '';
   setOrderLocation(order.orderLocation || 'Pusat');
+     setCartNo(order.orderNo || String(order.invoiceNumber || '').replace(/\D/g, ''));
 
   saveCart();
 
@@ -1810,8 +1834,7 @@ function closeSavedOrders() {
 function orderText() {
   const items = cartValues();
 
-  const id = 'CAT-' +
-    new Date().toISOString().replace(/[-:TZ.]/g, '').slice(0, 14);
+   const id = 'CAT-' + getCartNo();
 
   const total = items.reduce(
     (sum, item) => sum + item.price * item.qty,
@@ -2008,6 +2031,8 @@ function importOrderFromText() {
   }
 
   cart = importedCart;
+     const noMatch = text.match(/^New Order:\s*CAT-(\d+)/m);
+  setCartNo(noMatch ? noMatch[1] : '');
   saveCart();
 
   closeImportOrder();
@@ -2102,7 +2127,9 @@ window.addEventListener('popstate', () => {
   panelBackGuardActive = false;
 
   // Cart gets priority: Back must close it before exiting the app.
-    if ($('viewOrderPanel') && $('viewOrderPanel').classList.contains('open')) {
+      if (window.closeNotaPopup) {
+    window.closeNotaPopup();
+  } else if ($('viewOrderPanel') && $('viewOrderPanel').classList.contains('open')) {
     window.closeViewOrder();
   } else if ($('cartPanel').classList.contains('open')) {
     closeCart();
@@ -2536,20 +2563,33 @@ initializeApp();
   }
 
   /* ---------- popup: name + payment method ---------- */
-   function askDetails(defaultType) {
+     function askDetails(defaultType, defaultDoc) {
     return new Promise(resolve => {
       let payment = 'Cash';
+             let docType = defaultDoc || 'Nota';
 
       const overlay = document.createElement('div');
       overlay.style.cssText =
+              overlay.style.cssText =
         'position:fixed;inset:0;z-index:999998;display:flex;' +
-        'align-items:center;justify-content:center;padding:20px;' +
+        'align-items:flex-start;justify-content:center;' +
+        'padding:max(12px,env(safe-area-inset-top)) 14px 14px;' +
+        'overflow-y:auto;-webkit-overflow-scrolling:touch;' +
         'background:rgba(0,0,0,.6);';
 
       overlay.innerHTML = `
-        <section style="width:min(380px,100%);padding:20px;background:#fff;
+               <section style="width:min(380px,100%);padding:20px;background:#fff;margin:0 auto;
                         color:#172033;border-radius:16px;box-sizing:border-box">
-          <h2 style="margin:0 0 14px;font-size:18px">Nota Pembayaran</h2>
+                   <h2 style="margin:0 0 12px;font-size:18px">Cetak dokumen</h2>
+          <div style="display:grid;grid-template-columns:1fr 1fr;gap:8px;margin-bottom:14px">
+            ${['Nota', 'Invoice'].map(d => `
+              <button type="button" data-doc="${d}"
+                style="padding:11px 6px;border:1px solid #e7eaf0;border-radius:9px;
+                       font-size:13px;font-weight:700;cursor:pointer">
+                ${d === 'Nota' ? 'Nota Pembayaran' : 'Invoice'}
+              </button>
+            `).join('')}
+          </div>
 
           <label style="display:block;font-size:12px;font-weight:700;margin-bottom:6px">
             Nama pelanggan (opsional)
@@ -2573,7 +2613,7 @@ initializeApp();
               .join('')}
           </select>
 
-          <div style="font-size:12px;font-weight:700;margin:14px 0 6px">Pembayaran</div>
+                    <div id="notaPayLabel" style="font-size:12px;font-weight:700;margin:14px 0 6px">Pembayaran</div>
           <div style="display:grid;grid-template-columns:repeat(3,1fr);gap:8px">
             ${['QRIS', 'Cash', 'Transfer'].map(p => `
               <button type="button" data-pay="${p}"
@@ -2603,14 +2643,44 @@ initializeApp();
         b.style.color = on ? '#fff' : '#172033';
         b.style.borderColor = on ? '#16845b' : '#e7eaf0';
       });
+      const docButtons = [...overlay.querySelectorAll('[data-doc]')];
+      const payLabel = overlay.querySelector('#notaPayLabel');
+      const payGrid = payLabel.nextElementSibling;
 
+      const paintDoc = () => {
+        docButtons.forEach(b => {
+          const on = b.dataset.doc === docType;
+          b.style.background = on ? '#16845b' : '#fff';
+          b.style.color = on ? '#fff' : '#172033';
+          b.style.borderColor = on ? '#16845b' : '#e7eaf0';
+        });
+        const isNota = docType === 'Nota';
+        payLabel.style.display = isNota ? '' : 'none';
+        payGrid.style.display = isNota ? 'grid' : 'none';
+      };
+
+      docButtons.forEach(b => b.addEventListener('click', () => {
+        docType = b.dataset.doc;
+        paintDoc();
+      }));
+      paintDoc();
       payButtons.forEach(b => b.addEventListener('click', () => {
         payment = b.dataset.pay;
         paint();
       }));
       paint();
 
-      const close = value => { overlay.remove(); resolve(value); };
+           overlay.id = 'notaPopupOverlay';
+      const hadGuard = panelBackGuardActive;
+      activatePanelBackGuard();
+
+      const close = (value, fromBack) => {
+        overlay.remove();
+        window.closeNotaPopup = null;
+        if (!fromBack && !hadGuard) releasePanelBackGuard();
+        resolve(value);
+      };
+      window.closeNotaPopup = () => close(null, true);
       overlay.querySelector('[data-nota-cancel]')
         .addEventListener('click', () => close(null));
       overlay.querySelector('[data-nota-ok]')
@@ -2618,10 +2688,11 @@ initializeApp();
                     close({
             name: input.value.trim(),
             payment,
-            customerType: overlay.querySelector('#notaTypeSelect').value
+                        customerType: overlay.querySelector('#notaTypeSelect').value,
+            docType
           }));
 
-      input.focus();
+            if (!window.matchMedia('(pointer: coarse)').matches) input.focus();
     });
   }
 
@@ -2663,10 +2734,10 @@ initializeApp();
 
     if (page.first) {
       ctx.font = 'bold 40px Arial';
-      ctx.fillText('Nota Pembayaran', W - M, 78);
+            ctx.fillText(data.docType === 'Invoice' ? 'Invoice' : 'Nota Pembayaran', W - M, 78);
       ctx.font = '20px Arial';
       ctx.fillStyle = '#777777';
-      ctx.fillText(String(data.invoiceNumber).replace(/^INV-/, 'NOT-'), W - M, 112);
+      ctx.fillText(String(data.invoiceNumber).replace(/^INV-/, data.docType === 'Invoice' ? 'INV-' : 'NOT-'), W - M, 112);
       hline(150, '#171717', 2);
 
       ctx.textAlign = 'left';
@@ -2685,7 +2756,7 @@ initializeApp();
       y = 340;
     } else {
       ctx.font = 'bold 26px Arial';
-      ctx.fillText('Nota Pembayaran (lanjutan)', W - M, 60);
+            ctx.fillText((data.docType === 'Invoice' ? 'Invoice' : 'Nota Pembayaran') + ' (lanjutan)', W - M, 60);
       hline(105, '#171717', 2);
       y = 130;
     }
@@ -2747,29 +2818,35 @@ initializeApp();
       ctx.font = 'bold 40px Arial';
       ctx.fillText(money(data.total), W - M, y + 60);
 
-      /* payment + date are pinned to the bottom, above the footer */
-      const by = H - FOOT - 160;
+            /* payment (Nota only) + date, pinned to the bottom above the footer */
+      const isInv = data.docType === 'Invoice';
+      const by = H - FOOT - (isInv ? 80 : 160);
       hline(by, '#cfd3da', 1);
 
+      let dy = by + 50;
+
+      if (!isInv) {
+        ctx.textAlign = 'left';
+        ctx.fillStyle = '#777777';
+        ctx.font = '22px Arial';
+        ctx.fillText('Pembayaran', M, dy);
+        ctx.textAlign = 'right';
+        ctx.fillStyle = '#171717';
+        ctx.font = 'bold 26px Arial';
+        ctx.fillText(data.payment, W - M, dy);
+
+        hline(by + 80, '#cfd3da', 1);
+        dy = by + 130;
+      }
+
       ctx.textAlign = 'left';
       ctx.fillStyle = '#777777';
       ctx.font = '22px Arial';
-      ctx.fillText('Pembayaran', M, by + 50);
-      ctx.textAlign = 'right';
-      ctx.fillStyle = '#171717';
-      ctx.font = 'bold 26px Arial';
-      ctx.fillText(data.payment, W - M, by + 50);
-
-      hline(by + 80, '#cfd3da', 1);
-
-      ctx.textAlign = 'left';
-      ctx.fillStyle = '#777777';
-      ctx.font = '22px Arial';
-      ctx.fillText('Tanggal dibuat', M, by + 130);
+      ctx.fillText('Tanggal dibuat', M, dy);
       ctx.textAlign = 'right';
       ctx.fillStyle = '#171717';
       ctx.font = '24px Arial';
-      ctx.fillText(formatDate(data.createdAt), W - M, by + 130);
+      ctx.fillText(formatDate(data.createdAt), W - M, dy);
     }
 
     /* footer on every page */
@@ -2785,7 +2862,12 @@ initializeApp();
     ctx.textAlign = 'center';
     ctx.fillStyle = '#666666';
     ctx.font = '19px Arial';
-    ctx.fillText(FOOTER_TEXT, W / 2, H - 28);
+        ctx.fillText(
+      data.docType === 'Invoice'
+        ? 'Terima kasih telah berbelanja di Centi Store'
+        : FOOTER_TEXT,
+      W / 2, H - 28
+    );
 
     return c;
   }
@@ -2857,8 +2939,9 @@ initializeApp();
   }
 
   async function runNota(base) {
-        const details = await askDetails(
-      base.customerType || ($('customerType') ? $('customerType').value : '')
+           const details = await askDetails(
+      base.customerType || ($('customerType') ? $('customerType').value : ''),
+      base.docType
     );
     if (!details) return;
 
@@ -2869,7 +2952,8 @@ initializeApp();
         ...base,
         customerName: details.name,
        customerType: details.customerType,
-        payment: details.payment
+                payment: details.payment,
+        docType: details.docType
       });
       await printPages(pages);
     } catch (error) {
@@ -2901,7 +2985,7 @@ initializeApp();
       total: items.reduce((s, i) => s + i.price * i.qty, 0),
       customerType: $('customerType').value,
       createdAt: new Date().toISOString(),
-      invoiceNumber: 'INV-' + Date.now()
+            invoiceNumber: 'INV-' + getCartNo()
     });
   }
 
