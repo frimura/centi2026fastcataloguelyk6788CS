@@ -1879,16 +1879,9 @@ async function sendOrder() {
     return;
   }
 
-  const url = (settings.scriptUrl || '').trim();
-  const pin = (settings.pin || '').trim();
+ const pin = (settings.pin || '').trim();
 
-  if (!url) {
-    openSettings();
-    showToast(t('setURL'));
-    return;
-  }
-
-  if (!pin) {
+if (!pin) {
     openSettings();
     showToast(t('enterPIN'));
     return;
@@ -1904,13 +1897,28 @@ async function sendOrder() {
   button.textContent = t('sending');
 
   try {
-    const query = new URLSearchParams({
-      action: 'order',
+    const response = await fetch(
+  `${SUPABASE_URL}/functions/v1/listener-gateway`,
+  {
+    method: 'POST',
+    headers: {
+      'Content-Type': 'application/json',
+      'apikey': SUPABASE_PUBLIC_KEY,
+      'Authorization': `Bearer ${SUPABASE_PUBLIC_KEY}`
+    },
+    body: JSON.stringify({
+      action: 'telegram',
       pin,
-      payload: JSON.stringify(order)
-    });
+      payload: order
+    })
+  }
+);
 
-    const result = await jsonp(url + '?' + query.toString(), 30000);
+const result = await response.json();
+
+if (!response.ok || !result.ok) {
+  throw new Error(result.error || t('telegramRejected'));
+}
 
     if (!result.ok) {
       throw new Error(result.error || t('telegramRejected'));
