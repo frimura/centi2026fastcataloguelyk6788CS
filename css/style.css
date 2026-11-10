@@ -1652,3 +1652,58 @@ main {
   padding: 4px !important;
   font-size: 11px !important;
 }
+
+/* FINAL BUTTON SIZE NORMALIZATION */
+
+#cartPanel .cart-button-row {
+  display: grid !important;
+  grid-template-columns: repeat(2, minmax(0, 1fr)) !important;
+  gap: 6px !important;
+  align-items: stretch !important;
+}
+
+/* Force all four buttons to identical dimensions */
+#cartPanel .cart-button-row > button {
+  box-sizing: border-box !important;
+  display: flex !important;
+
+  width: 100% !important;
+  min-width: 0 !important;
+  max-width: none !important;
+
+  height: 36px !important;
+  min-height: 36px !important;
+  max-height: 36px !important;
+
+  margin: 0 !important;
+  padding: 3px 5px !important;
+
+  flex: initial !important;
+  align-items: center !important;
+  justify-content: center !important;
+  flex-direction: row !important;
+  gap: 5px !important;
+
+  font-size: 10px !important;
+  line-height: 1 !important;
+  white-space: nowrap !important;
+}
+
+/* Smaller icons */
+#cartPanel .cart-button-row > button svg {
+  width: 14px !important;
+  height: 14px !important;
+  flex-shrink: 0 !important;
+}
+
+/* Reduce spacing between rows */
+#cartPanel .cart-actions {
+  gap: 5px !important;
+  padding: 0 !important;
+}
+
+/* Slightly tighter footer */
+#cartPanel .cart-footer {
+  padding-top: 6px !important;
+  padding-bottom: 6px !important;
+}
