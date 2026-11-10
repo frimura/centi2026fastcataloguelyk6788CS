@@ -1393,7 +1393,8 @@ items.forEach(item => {
 $('copyOrder').disabled = !items.length;
 $('emptyCart').disabled = !items.length;
 $('saveCartOrder').disabled = !items.length;
-
+if ($('printNotaCart')) $('printNotaCart').disabled = !items.length;
+   
   $('cartItems').querySelectorAll('[data-minus]').forEach(button => {
     button.onclick = () => changeQty(button.dataset.minus, -1);
   });
@@ -1538,6 +1539,14 @@ function renderSavedOrders() {
         class="secondary-button"
         data-copy-invoice="${esc(order.id)}">
   Copy Invoice
+</button>
+<button type="button" class="print-saved" data-print-saved="${esc(order.id)}">
+  <svg viewBox="0 0 24 24" width="16" height="16" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+    <path d="M6 9V2h12v7"/>
+    <path d="M6 18H4a2 2 0 0 1-2-2v-5a2 2 0 0 1 2-2h16a2 2 0 0 1 2 2v5a2 2 0 0 1-2 2h-2"/>
+    <path d="M6 14h12v8H6z"/>
+  </svg>
+  Print Nota
 </button>
 <button type="button" class="view-saved" data-id="${order.id}" aria-label="View order" title="View order">
   <svg viewBox="0 0 24 24" width="18" height="18" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
@@ -2443,4 +2452,409 @@ initializeApp();
   document.addEventListener('keydown', (e) => {
     if (e.key === 'Escape' && panel.classList.contains('open')) closeViewOrder();
   });
+})();
+/* =========================================================
+   NOTA PEMBAYARAN (A5, print)
+   ========================================================= */
+(function initNota() {
+  const W = 1050, H = 1488, M = 60, FOOT = 90;   // ~A5 portrait ratio
+  const FOOTER_TEXT =
+    'Lembar ini merupakan nota sah yang di keluarkan oleh Centi Store';
+
+  function loadLogo() {
+    return new Promise(resolve => {
+      const img = new Image();
+      img.onload = () => resolve(img);
+      img.onerror = () => resolve(null);
+      img.src = 'assets/centi-logo.png';
+    });
+  }
+
+  function wrapText(ctx, text, maxW, maxLines) {
+    const words = String(text || '').split(/\s+/).filter(Boolean);
+    const lines = [];
+    let line = '';
+    words.forEach(word => {
+      const test = line ? line + ' ' + word : word;
+      if (ctx.measureText(test).width > maxW && line) {
+        lines.push(line);
+        line = word;
+      } else {
+        line = test;
+      }
+    });
+    if (line) lines.push(line);
+    if (!lines.length) lines.push('');
+    if (lines.length > maxLines) {
+      lines.length = maxLines;
+      lines[maxLines - 1] = lines[maxLines - 1].slice(0, -1) + '…';
+    }
+    return lines;
+  }
+
+  function formatDate(iso) {
+    const d = new Date(iso);
+    const date = d.toLocaleDateString('id-ID',
+      { day: '2-digit', month: 'long', year: 'numeric' });
+    const time = d.toLocaleTimeString('id-ID',
+      { hour: '2-digit', minute: '2-digit' });
+    return `${date}, ${time}`;
+  }
+
+  /* ---------- popup: name + payment method ---------- */
+  function askDetails() {
+    return new Promise(resolve => {
+      let payment = 'Cash';
+
+      const overlay = document.createElement('div');
+      overlay.style.cssText =
+        'position:fixed;inset:0;z-index:999998;display:flex;' +
+        'align-items:center;justify-content:center;padding:20px;' +
+        'background:rgba(0,0,0,.6);';
+
+      overlay.innerHTML = `
+        <section style="width:min(380px,100%);padding:20px;background:#fff;
+                        color:#172033;border-radius:16px;box-sizing:border-box">
+          <h2 style="margin:0 0 14px;font-size:18px">Nota Pembayaran</h2>
+
+          <label style="display:block;font-size:12px;font-weight:700;margin-bottom:6px">
+            Nama pelanggan (opsional)
+          </label>
+          <input id="notaNameInput" type="text" autocomplete="off"
+                 placeholder="Kosongkan = jenis pelanggan saja"
+                 style="width:100%;padding:11px;border:1px solid #e7eaf0;
+                        border-radius:9px;font-size:14px;box-sizing:border-box">
+
+          <div style="font-size:12px;font-weight:700;margin:14px 0 6px">Pembayaran</div>
+          <div style="display:grid;grid-template-columns:repeat(3,1fr);gap:8px">
+            ${['QRIS', 'Cash', 'Transfer'].map(p => `
+              <button type="button" data-pay="${p}"
+                style="padding:11px 6px;border:1px solid #e7eaf0;border-radius:9px;
+                       font-size:13px;font-weight:700;cursor:pointer">${p}</button>
+            `).join('')}
+          </div>
+
+          <div style="display:grid;grid-template-columns:1fr 1fr;gap:8px;margin-top:18px">
+            <button type="button" data-nota-cancel
+              style="padding:12px;border:1px solid #e7eaf0;border-radius:10px;
+                     background:#fff;font-weight:700;cursor:pointer">Batal</button>
+            <button type="button" data-nota-ok
+              style="padding:12px;border:0;border-radius:10px;background:#16845b;
+                     color:#fff;font-weight:700;cursor:pointer">Print</button>
+          </div>
+        </section>`;
+
+      document.body.appendChild(overlay);
+
+      const input = overlay.querySelector('#notaNameInput');
+      const payButtons = [...overlay.querySelectorAll('[data-pay]')];
+
+      const paint = () => payButtons.forEach(b => {
+        const on = b.dataset.pay === payment;
+        b.style.background = on ? '#16845b' : '#fff';
+        b.style.color = on ? '#fff' : '#172033';
+        b.style.borderColor = on ? '#16845b' : '#e7eaf0';
+      });
+
+      payButtons.forEach(b => b.addEventListener('click', () => {
+        payment = b.dataset.pay;
+        paint();
+      }));
+      paint();
+
+      const close = value => { overlay.remove(); resolve(value); };
+      overlay.querySelector('[data-nota-cancel]')
+        .addEventListener('click', () => close(null));
+      overlay.querySelector('[data-nota-ok]')
+        .addEventListener('click', () =>
+          close({ name: input.value.trim(), payment }));
+
+      input.focus();
+    });
+  }
+
+  /* ---------- page drawing ---------- */
+  function drawPage(page, index, totalPages, logo, data) {
+    const c = document.createElement('canvas');
+    c.width = W;
+    c.height = H;
+    const ctx = c.getContext('2d');
+
+    ctx.fillStyle = '#ffffff';
+    ctx.fillRect(0, 0, W, H);
+
+    const hline = (yy, color, width) => {
+      ctx.strokeStyle = color;
+      ctx.lineWidth = width;
+      ctx.beginPath();
+      ctx.moveTo(M, yy);
+      ctx.lineTo(W - M, yy);
+      ctx.stroke();
+    };
+
+    let y;
+
+    /* header */
+    if (logo) {
+      const lw = page.first ? 420 : 260;
+      const lh = lw * logo.height / logo.width;
+      ctx.drawImage(logo, M - 25, 0, lw, lh);
+    } else {
+      ctx.fillStyle = '#8f0010';
+      ctx.font = 'bold 40px Arial';
+      ctx.textAlign = 'left';
+      ctx.fillText('CENTI STORE', M, 80);
+    }
+
+    ctx.textAlign = 'right';
+    ctx.fillStyle = '#171717';
+
+    if (page.first) {
+      ctx.font = 'bold 40px Arial';
+      ctx.fillText('Nota Pembayaran', W - M, 78);
+      ctx.font = '20px Arial';
+      ctx.fillStyle = '#777777';
+      ctx.fillText(data.invoiceNumber, W - M, 112);
+      hline(150, '#171717', 2);
+
+      ctx.textAlign = 'left';
+      ctx.fillStyle = '#777777';
+      ctx.font = 'bold 18px Arial';
+      ctx.fillText('PELANGGAN', M, 200);
+
+      ctx.fillStyle = '#171717';
+      ctx.font = 'bold 30px Arial';
+      ctx.fillText(data.customerType || '-', M, 244);
+
+      if (data.customerName) {
+        ctx.font = '26px Arial';
+        ctx.fillText(data.customerName, M, 284);
+      }
+      y = 340;
+    } else {
+      ctx.font = 'bold 26px Arial';
+      ctx.fillText('Nota Pembayaran (lanjutan)', W - M, 60);
+      hline(105, '#171717', 2);
+      y = 130;
+    }
+
+    /* table */
+    if (page.rows.length) {
+      ctx.fillStyle = '#f3f4f6';
+      ctx.fillRect(M, y, W - M * 2, 44);
+
+      ctx.fillStyle = '#555555';
+      ctx.font = 'bold 16px Arial';
+      ctx.textAlign = 'left';
+      ctx.fillText('ITEM', M + 12, y + 29);
+      ctx.textAlign = 'right';
+      ctx.fillText('QTY', 650, y + 29);
+      ctx.fillText('HARGA', 820, y + 29);
+      ctx.fillText('SUBTOTAL', W - M - 12, y + 29);
+      y += 56;
+
+      page.rows.forEach(r => {
+        const it = r.item;
+        const qty = Number(it.qty) || 0;
+        const price = Number(it.price) || 0;
+
+        hline(y, '#e5e7eb', 1);
+
+        ctx.textAlign = 'left';
+        ctx.fillStyle = '#171717';
+        ctx.font = 'bold 22px Arial';
+        r.lines.forEach((ln, i) => ctx.fillText(ln, M + 12, y + 36 + i * 28));
+
+        ctx.font = '15px Arial';
+        ctx.fillStyle = '#777777';
+        ctx.fillText(`SKU: ${it.sku || '-'}`, M + 12,
+          y + 62 + (r.lines.length - 1) * 28);
+
+        ctx.fillStyle = '#333333';
+        ctx.font = '21px Arial';
+        ctx.textAlign = 'right';
+        ctx.fillText(String(qty), 650, y + 36);
+        ctx.fillText(money(price), 820, y + 36);
+        ctx.fillText(money(price * qty), W - M - 12, y + 36);
+
+        y += r.h;
+      });
+    }
+
+    /* totals (last page only) */
+    if (page.totals) {
+      hline(y, '#171717', 2);
+
+      ctx.textAlign = 'left';
+      ctx.fillStyle = '#777777';
+      ctx.font = 'bold 22px Arial';
+      ctx.fillText('GRAND TOTAL', M, y + 58);
+
+      ctx.textAlign = 'right';
+      ctx.fillStyle = '#171717';
+      ctx.font = 'bold 40px Arial';
+      ctx.fillText(money(data.total), W - M, y + 60);
+
+      hline(y + 90, '#cfd3da', 1);
+
+      ctx.textAlign = 'left';
+      ctx.fillStyle = '#777777';
+      ctx.font = '22px Arial';
+      ctx.fillText('Pembayaran', M, y + 138);
+      ctx.textAlign = 'right';
+      ctx.fillStyle = '#171717';
+      ctx.font = 'bold 26px Arial';
+      ctx.fillText(data.payment, W - M, y + 138);
+
+      hline(y + 168, '#cfd3da', 1);
+
+      ctx.textAlign = 'left';
+      ctx.fillStyle = '#777777';
+      ctx.font = '22px Arial';
+      ctx.fillText('Tanggal dibuat', M, y + 216);
+      ctx.textAlign = 'right';
+      ctx.fillStyle = '#171717';
+      ctx.font = '24px Arial';
+      ctx.fillText(formatDate(data.createdAt), W - M, y + 216);
+
+      hline(y + 246, '#cfd3da', 1);
+    }
+
+    /* footer on every page */
+    hline(H - FOOT, '#cfd3da', 1);
+
+    if (totalPages > 1) {
+      ctx.textAlign = 'right';
+      ctx.fillStyle = '#777777';
+      ctx.font = '16px Arial';
+      ctx.fillText(`Halaman ${index + 1}/${totalPages}`, W - M, H - FOOT + 30);
+    }
+
+    ctx.textAlign = 'center';
+    ctx.fillStyle = '#666666';
+    ctx.font = '19px Arial';
+    ctx.fillText(FOOTER_TEXT, W / 2, H - 28);
+
+    return c;
+  }
+
+  async function generatePages(data) {
+    const logo = await loadLogo();
+
+    const measure = document.createElement('canvas').getContext('2d');
+    measure.font = 'bold 22px Arial';
+
+    const rows = data.items.map(item => {
+      const lines = wrapText(measure, item.name, 470, 2);
+      return { item, lines, h: 56 + lines.length * 28 };
+    });
+
+    const HEAD1 = 340, HEADN = 130, TABLE_HEAD = 56, TOTALS = 290;
+    const limit = H - FOOT - 20;
+
+    const pages = [];
+    let cur = { rows: [], first: true };
+    let y = HEAD1 + TABLE_HEAD;
+
+    rows.forEach(r => {
+      if (y + r.h > limit) {
+        pages.push(cur);
+        cur = { rows: [], first: false };
+        y = HEADN + TABLE_HEAD;
+      }
+      cur.rows.push(r);
+      y += r.h;
+    });
+
+    if (y + TOTALS > limit) {
+      pages.push(cur);
+      cur = { rows: [], first: false };
+    }
+    cur.totals = true;
+    pages.push(cur);
+
+    return pages.map((p, i) => drawPage(p, i, pages.length, logo, data));
+  }
+
+  /* ---------- print ---------- */
+  async function printPages(canvases) {
+    const old = document.getElementById('notaPrintArea');
+    if (old) old.remove();
+
+    const area = document.createElement('div');
+    area.id = 'notaPrintArea';
+
+    const imgs = canvases.map(canvas => {
+      const img = new Image();
+      img.src = canvas.toDataURL('image/png');
+      area.appendChild(img);
+      return img;
+    });
+
+    document.body.appendChild(area);
+
+    await Promise.all(imgs.map(img =>
+      img.decode ? img.decode().catch(() => {}) : Promise.resolve()
+    ));
+
+    window.addEventListener('afterprint', () => {
+      setTimeout(() => area.remove(), 1000);
+    }, { once: true });
+
+    window.print();
+  }
+
+  async function runNota(base) {
+    const details = await askDetails();
+    if (!details) return;
+
+    showToast('Membuat nota…');
+
+    try {
+      const pages = await generatePages({
+        ...base,
+        customerName: details.name,
+        payment: details.payment
+      });
+      await printPages(pages);
+    } catch (error) {
+      console.error('Nota failed:', error);
+      showToast('Gagal membuat nota');
+    }
+  }
+
+  function printSavedNota(id) {
+    const order = savedOrders.find(o => o.id === id);
+    if (!order) return;
+
+    runNota({
+      items: order.items,
+      total: order.total,
+      customerType: order.customerType,
+      createdAt: order.createdAt,
+      invoiceNumber: order.invoiceNumber ||
+        'INV-' + String(order.id).replace('SAVED-', '')
+    });
+  }
+
+  function printCartNota() {
+    const items = cartValues();
+    if (!items.length) return;
+
+    runNota({
+      items: JSON.parse(JSON.stringify(items)),
+      total: items.reduce((s, i) => s + i.price * i.qty, 0),
+      customerType: $('customerType').value,
+      createdAt: new Date().toISOString(),
+      invoiceNumber: 'INV-' + Date.now()
+    });
+  }
+
+  $('savedOrdersList').addEventListener('click', e => {
+    const btn = e.target.closest('.print-saved');
+    if (btn) printSavedNota(btn.dataset.printSaved);
+  });
+
+  const cartBtn = $('printNotaCart');
+  if (cartBtn) cartBtn.addEventListener('click', printCartNota);
 })();
