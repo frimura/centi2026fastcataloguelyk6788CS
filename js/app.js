@@ -1992,14 +1992,29 @@ async function sendToPC() {
   button.textContent = t('sendingPC');
 
   try {
-    const query = new URLSearchParams({
+    const response = await fetch(
+  'https://rtvxegwgcjoxcmmojhqk.supabase.co/functions/v1/listener-gateway',
+  {
+    method: 'POST',
+    headers: {
+      'Content-Type': 'application/json',
+      'apikey': 'sb_publishable_but9O4L_QdZiTDU01hVn7w_UJ3VAYa6',
+      'Authorization': 'Bearer sb_publishable_but9O4L_QdZiTDU01hVn7w_UJ3VAYa6'
+    },
+    body: JSON.stringify({
       action: 'route',
       pin,
       listenerId,
-      payload: JSON.stringify(order)
-    });
+      payload: order
+    })
+  }
+);
 
-    const result = await jsonp(url + '?' + query.toString(), 30000);
+const result = await response.json();
+
+if (!response.ok || !result.ok) {
+  throw new Error(result.error || 'Could not route order');
+}
 
     if (!result.ok) {
       throw new Error(result.error || t('pcFailed'));
