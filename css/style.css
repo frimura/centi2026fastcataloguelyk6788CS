@@ -1367,7 +1367,7 @@ main {
 #cartPanel .cart-actions .copy-save-row button {
   width: 100% !important;
   min-width: 0 !important;
-  min-height: 84px !important;
+  min-height: 70px !important;
 }
 
 /* Telegram */
