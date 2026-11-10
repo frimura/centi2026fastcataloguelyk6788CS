@@ -1914,10 +1914,6 @@ if (!response.ok || !result.ok) {
 
     showToast(t('sentTelegram'));
 
-    cart = {};
-    saveCart();
-    closeCart();
-
   } catch (error) {
     showToast(`${t('orderFailed')}: ${error.message}. ${t('sendFailedCopy')}`);
   } finally {
