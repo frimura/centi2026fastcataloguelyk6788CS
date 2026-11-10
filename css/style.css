@@ -1707,3 +1707,49 @@ main {
   padding-top: 6px !important;
   padding-bottom: 6px !important;
 }
+
+/* FORCE ALL FOUR CART BUTTONS TO MATCH */
+
+#cartPanel #saveCartOrder,
+#cartPanel #sendOrder,
+#cartPanel #copyOrder,
+#cartPanel #emptyCart {
+  box-sizing: border-box !important;
+
+  width: 100% !important;
+  height: 42px !important;
+  min-height: 42px !important;
+  max-height: 42px !important;
+
+  padding: 0 6px !important;
+  margin: 0 !important;
+
+  flex: none !important;
+  align-self: stretch !important;
+
+  display: flex !important;
+  align-items: center !important;
+  justify-content: center !important;
+  flex-direction: row !important;
+  gap: 5px !important;
+
+  font-size: 10px !important;
+  line-height: 1 !important;
+}
+
+/* Prevent icons from affecting button height */
+#cartPanel #saveCartOrder svg,
+#cartPanel #sendOrder svg,
+#cartPanel #copyOrder svg,
+#cartPanel #emptyCart svg {
+  width: 14px !important;
+  height: 14px !important;
+  flex-shrink: 0 !important;
+}
+/* Consistent button rounding */
+#cartPanel #saveCartOrder,
+#cartPanel #sendOrder,
+#cartPanel #copyOrder,
+#cartPanel #emptyCart {
+  border-radius: 10px !important;
+}
