@@ -2178,7 +2178,9 @@ function bindEvents() {
   $('navCart').onclick = openCart;
 $('savedOrdersTop').onclick = openSavedOrders;
 
-$('closeSavedOrders').onclick = closeSavedOrders;
+if ($('closeSavedOrders')) {
+  $('closeSavedOrders').onclick = closeSavedOrders;
+}
 $('savedOrdersOverlay').onclick = closeSavedOrders;
 
 $('saveCartOrder').onclick = saveCurrentOrder;
