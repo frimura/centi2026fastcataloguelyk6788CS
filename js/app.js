@@ -2227,8 +2227,15 @@ $('navCatalog').onclick = () => {
     openSettings();
   };
 
-  $('closeSettings').onclick = closeSettings;
-  $('settingsOverlay').onclick = closeSettings;
+ const closeSettingsButton = $('closeSettings');
+if (closeSettingsButton) {
+  closeSettingsButton.onclick = closeSettings;
+}
+
+const settingsOverlay = $('settingsOverlay');
+if (settingsOverlay) {
+  settingsOverlay.onclick = closeSettings;
+}
 
   $('saveSettings').onclick = () => {
     settings = {
