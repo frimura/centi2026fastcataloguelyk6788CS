@@ -190,8 +190,7 @@
     <option value="CENTI - WA Channel">WA Channel</option>
   </select>
 </div>
-<div class="copy-save-row">
- 
+
 <div class="cart-actions">
 
   <div class="copy-save-row">
@@ -245,78 +244,12 @@
 
 </div>
 
-     <p class="footnote">
+<p class="footnote">
   The catalog is public. The PIN protects Telegram order submission.
   Do not put your Telegram bot token in this website.
 </p>
-    </div>
-  </aside>
-  <!-- SAVED ORDERS PANEL -->
-<div id="savedOrdersOverlay" class="overlay hidden"></div>
-
-<aside id="savedOrdersPanel" class="cart-panel"
-       aria-label="Saved orders" aria-hidden="true">
-
-  <div class="panel-head">
-    <div>
-      <strong>Saved Orders</strong>
-      <small id="savedOrdersSubtitle">0 saved orders</small>
-    </div>
-    <button id="closeSavedOrders" class="icon-button"
-            aria-label="Close saved orders">×</button>
-  </div>
-
-  <div id="savedOrdersList" class="cart-items">
-    <div class="empty">
-      <strong>No saved orders</strong>
-      <span>Save an order from your cart.</span>
-    </div>
-  </div>
-
+</div>
 </aside>
-  <!-- IMPORT ORDER PANEL -->
-<div id="importOrderOverlay" class="overlay hidden"></div>
-
-<aside id="importOrderPanel" class="cart-panel import-panel"
-       aria-label="Import order" aria-hidden="true">
-
-  <div class="panel-head">
-    <div>
-      <strong>Import Order</strong>
-      <small>Paste your copied order text below</small>
-    </div>
-
-    <button id="closeImportOrder" class="icon-button"
-            type="button" aria-label="Close">×</button>
-  </div>
-
-  <div class="import-order-content">
-    <label for="importOrderText">Order text</label>
-
-    <textarea
-      id="importOrderText"
-      placeholder="Paste your copied order here..."
-      spellcheck="false"
-    ></textarea>
-
-    <button id="pasteImportOrder" class="secondary-button" type="button">
-      Paste from Clipboard
-    </button>
-
-    <button id="confirmImportOrder" class="primary-button" type="button">
-      Import to Cart
-    </button>
-  </div>
-
-</aside>
-  <div id="settingsOverlay" class="overlay hidden"></div>
-  <section id="settingsPanel" class="settings-panel hidden">
-    <div class="panel-head"><strong>Connection settings</strong><button id="closeSettings" class="icon-button">×</button></div>
-    <label>Apps Script Web App URL<input id="scriptUrl" type="url" placeholder="https://script.google.com/macros/s/.../exec"></label>
-    <label>Order access PIN<input id="orderPin" type="password" inputmode="numeric" placeholder="PIN configured in Apps Script"></label>
-    <button id="saveSettings" class="primary-button">Save settings</button>
-    <p class="footnote">The catalog is public. The PIN is used only to protect Telegram order submission. Do not put your Telegram bot token in this website.</p>
-  </section>
   
   <div id="toast" class="toast" role="status"></div>
   <script src="js/search.js"></script>
