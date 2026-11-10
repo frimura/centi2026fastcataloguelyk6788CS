@@ -210,7 +210,12 @@ function t(key) {
 }
 
 const $ = id => document.getElementById(id);
+const $ = id => document.getElementById(id);
 
+function setButtonLabel(id, label) {
+  const button = $(id);
+  if (button) button.textContent = label;
+}
 function applyLanguage() {
   document.documentElement.lang = currentLanguage;
 
