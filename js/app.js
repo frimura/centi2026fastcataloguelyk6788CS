@@ -2181,16 +2181,33 @@ $('savedOrdersTop').onclick = openSavedOrders;
 if ($('closeSavedOrders')) {
   $('closeSavedOrders').onclick = closeSavedOrders;
 }
-$('savedOrdersOverlay').onclick = closeSavedOrders;
+if ($('savedOrdersOverlay')) {
+  $('savedOrdersOverlay').onclick = closeSavedOrders;
+}
 
-$('saveCartOrder').onclick = saveCurrentOrder;
-   $('navImport').onclick = openImportOrder;
+if ($('saveCartOrder')) {
+  $('saveCartOrder').onclick = saveCurrentOrder;
+}
 
-$('closeImportOrder').onclick = closeImportOrder;
-$('importOrderOverlay').onclick = closeImportOrder;
+if ($('navImport')) {
+  $('navImport').onclick = openImportOrder;
+}
 
-$('pasteImportOrder').onclick = pasteImportOrder;
-$('confirmImportOrder').onclick = importOrderFromText;
+if ($('closeImportOrder')) {
+  $('closeImportOrder').onclick = closeImportOrder;
+}
+
+if ($('importOrderOverlay')) {
+  $('importOrderOverlay').onclick = closeImportOrder;
+}
+
+if ($('pasteImportOrder')) {
+  $('pasteImportOrder').onclick = pasteImportOrder;
+}
+
+if ($('confirmImportOrder')) {
+  $('confirmImportOrder').onclick = importOrderFromText;
+}
 
 $('navCatalog').onclick = () => {
   window.scrollTo({ top: 0, behavior: 'smooth' });
