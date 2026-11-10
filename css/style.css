@@ -1494,3 +1494,71 @@ main {
 
 /* Hide the variation line in the popup when a product has none */
 #quantityProductVariation:empty { display: none; }
+/* ===== NOTA PEMBAYARAN ===== */
+
+/* Cart: Save Order + Nota share the first cell */
+#cartPanel .save-print-pair {
+  grid-column: 1 !important;
+  grid-row: 1 !important;
+  display: grid;
+  grid-template-columns: 1.35fr 1fr;
+  gap: 6px;
+  min-width: 0;
+}
+#cartPanel .save-print-pair #saveCartOrder {
+  grid-column: 1 !important;
+  grid-row: 1 !important;
+}
+#cartPanel .save-print-pair #printNotaCart {
+  grid-column: 2 !important;
+  grid-row: 1 !important;
+  border-color: #111827;
+  background: var(--white);
+  color: #111827;
+}
+#cartPanel .save-print-pair #printNotaCart:active { background: var(--bg); }
+
+/* Saved orders: Print Nota sits above Delete + View */
+.saved-order-actions > button:nth-child(1) { grid-column: 1; grid-row: 1 / span 2; }
+.saved-order-actions > button:nth-child(3) { grid-column: 2; grid-row: 1 / span 2; }
+.saved-order-actions > .print-saved {
+  grid-column: 3 / span 2;
+  grid-row: 1;
+  width: 100%;
+  border: 1px solid #111827;
+  background: #111827;
+  color: var(--white);
+}
+.saved-order-actions > .print-saved:active { background: #000; }
+.saved-order-actions > button:nth-child(2) { grid-column: 3; grid-row: 2; }
+.saved-order-actions > .view-saved { grid-column: 4; grid-row: 2; }
+
+@media (max-width: 380px) {
+  .saved-order-actions { grid-template-columns: repeat(2, minmax(0, 1fr)); }
+  .saved-order-actions > button { grid-column: auto !important; grid-row: auto !important; }
+  .saved-order-actions > button:nth-child(1),
+  .saved-order-actions > .print-saved { grid-column: 1 / -1 !important; }
+}
+
+/* Print: only the nota pages, A5 */
+#notaPrintArea { display: none; }
+
+@media print {
+  @page { size: A5 portrait; margin: 0; }
+
+  body > *:not(#notaPrintArea) { display: none !important; }
+  body { padding: 0 !important; background: #fff !important; }
+
+  #notaPrintArea { display: block !important; }
+  #notaPrintArea img {
+    display: block;
+    width: 148mm;
+    height: auto;
+    break-after: page;
+    page-break-after: always;
+  }
+  #notaPrintArea img:last-child {
+    break-after: auto;
+    page-break-after: auto;
+  }
+}
