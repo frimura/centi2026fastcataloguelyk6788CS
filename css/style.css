@@ -1453,7 +1453,8 @@ padding: 0 2px;
   line-height: 1;
 }
 
-/* ===== CART ACTION BUTTON REDESIGN ===== */
+
+/* ===== CART ACTION BUTTON REDESIGN V2 ===== */
 
 .copy-save-row {
   display: grid;
@@ -1465,39 +1466,90 @@ padding: 0 2px;
 
 .copy-save-row button {
   width: 100%;
-  min-height: 54px;
-  border-radius: 14px;
+  min-height: 58px;
+  border-radius: 15px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 9px;
   font-size: 14px;
   font-weight: 700;
+  background: #ffffff;
   transition: background 0.2s, transform 0.15s;
 }
 
+.copy-save-row svg,
+.send-buttons-grid svg,
+.empty-cart-button svg {
+  flex-shrink: 0;
+}
+
+/* Copy */
+.action-copy {
+  color: #2563a8;
+}
+
+/* Save */
+.action-save {
+  color: #16845f;
+}
+
+/* Telegram */
 .send-buttons-grid {
   display: grid;
   grid-template-columns: 1fr;
   width: 100%;
-  margin-top: 10px;
+  margin-top: 12px;
+  margin-bottom: 14px;
 }
 
-.send-buttons-grid button {
+.send-buttons-grid button.action-telegram {
   width: 100%;
-  min-height: 58px;
-  border-radius: 14px;
+  min-height: 60px;
+  border: none;
+  border-radius: 15px;
+  background: #229ED9;
+  color: #ffffff;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 11px;
   font-size: 15px;
+  font-weight: 700;
+  box-shadow: 0 3px 8px rgba(34, 158, 217, 0.18);
+}
+
+.action-telegram:hover {
+  background: #168ac4;
+}
+
+/* Empty cart */
+button.empty-cart-button {
+  position: relative;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 9px;
+  width: 100%;
+  min-height: 52px;
+  margin-top: 0;
+  margin-bottom: 12px;
+  padding: 10px;
+  border: 1px solid #fecaca;
+  border-radius: 15px;
+  background: #fff7f7;
+  color: #dc2626;
+  font-size: 14px;
   font-weight: 700;
 }
 
-.empty-cart-button {
-  width: 100%;
-  min-height: 48px;
-  margin-top: 10px;
-  border: 1px solid #f0caca;
-  border-radius: 14px;
-  background: #fff7f7;
-  color: #d93636;
-  font-size: 14px;
-  font-weight: 600;
-  transition: background 0.2s, border-color 0.2s;
+/* Hover and press effects */
+.copy-save-row button:hover {
+  background: #f7f9fc;
+}
+
+.empty-cart-button:hover {
+  background: #feecec;
 }
 
 .copy-save-row button:active,
@@ -1506,19 +1558,18 @@ padding: 0 2px;
   transform: scale(0.98);
 }
 
-.empty-cart-button:hover {
-  background: #ffecec;
-  border-color: #e99a9a;
-}
-
-/* Mobile spacing */
+/* Mobile */
 @media (max-width: 480px) {
   .copy-save-row {
     gap: 8px;
   }
 
   .copy-save-row button {
-    min-height: 52px;
+    min-height: 54px;
     font-size: 13px;
+  }
+
+  .send-buttons-grid button.action-telegram {
+    min-height: 58px;
   }
 }
