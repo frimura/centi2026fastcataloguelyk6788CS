@@ -254,15 +254,9 @@ if (importNav) {
   setButtonLabel('sendOrder', t('sendTelegram'));
 setButtonLabel('copyOrder', t('copyOrder'));
 setButtonLabel('emptyCart', t('emptyCart'));
-  $('saveSettings').textContent = t('saveSettings');
 
-  const settingsLabels = $('settingsPanel').querySelectorAll('label');
-  if (settingsLabels[0]) {
-    settingsLabels[0].childNodes[0].textContent = t('appsScriptURL');
-  }
-  if (settingsLabels[1]) {
-    settingsLabels[1].childNodes[0].textContent = t('orderPIN');
-  }
+    const pinLabel = $('orderPinLabel');
+  if (pinLabel) pinLabel.textContent = t('orderPIN');
 
   updateRequesterBadge();
   renderProducts();
@@ -2072,15 +2066,15 @@ function openSettings() {
 
   $('settingsOverlay').classList.remove('hidden');
   $('settingsPanel').classList.remove('hidden');
-  $('settingsPanel').classList.add('open');
   $('settingsPanel').setAttribute('aria-hidden', 'false');
 
-  $('scriptUrl').value = settings.scriptUrl || '';
   $('orderPin').value = settings.pin || '';
-}
+  $('orderPin').type = 'password';
 
-  $('scriptUrl').value = settings.scriptUrl || '';
-  $('orderPin').value = settings.pin || '';
+  if (!window.matchMedia('(pointer: coarse)').matches) {
+    $('orderPin').focus();
+  }
+}
 
 
 function closeSettings() {
@@ -2330,11 +2324,13 @@ if (settingsOverlay) {
   settingsOverlay.onclick = closeSettings;
 }
 
-  $('saveSettings').onclick = () => {
-    settings = {
-      scriptUrl: $('scriptUrl').value.trim(),
-      pin: $('orderPin').value.trim()
-    };
+    $('saveSettings').onclick = () => {
+    settings = { pin: $('orderPin').value.trim() };
+
+    writeStorage(CONFIG.settingsKey, settings);
+    closeSettings();
+    showToast(t('settingsSaved'));
+  };
 
     writeStorage(CONFIG.settingsKey, settings);
     closeSettings();
