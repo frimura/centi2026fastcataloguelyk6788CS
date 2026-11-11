@@ -2122,16 +2122,31 @@ function releasePanelBackGuard() {
 
 
 window.addEventListener('popstate', () => {
+  // Our own history.back() calls: ignore once
+  if (window.__skipPop) {
+    window.__skipPop = false;
+    return;
+  }
+
+  // 1) Nota popup sits on top of everything
+  if (window.closeNotaPopup) {
+    window.closeNotaPopup();
+    return;
+  }
+
+  // 2) View Order panel
+  if ($('viewOrderPanel') && $('viewOrderPanel').classList.contains('open')) {
+    window.__viewEntry = false;
+    window.closeViewOrder();
+    return;
+  }
+
+  // 3) Everything else uses the shared guard
   if (!panelBackGuardActive) return;
 
   panelBackGuardActive = false;
 
-  // Cart gets priority: Back must close it before exiting the app.
-      if (window.closeNotaPopup) {
-    window.closeNotaPopup();
-  } else if ($('viewOrderPanel') && $('viewOrderPanel').classList.contains('open')) {
-    window.closeViewOrder();
-  } else if ($('cartPanel').classList.contains('open')) {
+  if ($('cartPanel').classList.contains('open')) {
     closeCart();
   } else if (!$('quantityPanel').classList.contains('hidden')) {
     closeQuantitySelector();
@@ -2454,18 +2469,25 @@ initializeApp();
     $('viewOrderTotal').textContent = money(order.total ?? total);
         $('viewOrderMeta').innerHTML = [order.orderLocation, order.customerType, order.requesterName]
       .filter(Boolean).map(esc).join(' · ');
-    activatePanelBackGuard();
+        history.pushState({ centiView: true }, '', location.href);
+    window.__viewEntry = true;
     overlay.classList.remove('hidden');
     panel.classList.add('open');
     panel.setAttribute('aria-hidden', 'false');
   }
 
-  function closeViewOrder() {
+    function closeViewOrder() {
     overlay.classList.add('hidden');
     panel.classList.remove('open');
     panel.setAttribute('aria-hidden', 'true');
-       window.closeViewOrder = closeViewOrder;
+
+    if (window.__viewEntry) {
+      window.__viewEntry = false;
+      window.__skipPop = true;
+      history.back();
+    }
   }
+  window.closeViewOrder = closeViewOrder;
 
   $('savedOrdersList').addEventListener('click', (e) => {
     const btn = e.target.closest('.view-saved');
@@ -2675,17 +2697,20 @@ initializeApp();
       }));
       paint();
 
-           overlay.id = 'notaPopupOverlay';
-      const hadGuard = panelBackGuardActive;
-      activatePanelBackGuard();
+                 overlay.id = 'notaPopupOverlay';
+      history.pushState({ centiNota: true }, '', location.href);
 
       const close = (value, fromBack) => {
         overlay.remove();
         window.closeNotaPopup = null;
-        if (!fromBack && !hadGuard) releasePanelBackGuard();
+        if (!fromBack) {
+          window.__skipPop = true;
+          history.back();
+        }
         resolve(value);
       };
       window.closeNotaPopup = () => close(null, true);
+       
              overlay.querySelector('[data-nota-wa]').addEventListener('click', () =>
         close({
           name: input.value.trim(),
