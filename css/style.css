@@ -1664,3 +1664,111 @@ main {
   font-size: 11px;
   text-align: center;
 }
+/* ===== PRODUCT POPUP: GALLERY + DESCRIPTION ===== */
+.quantity-panel {
+  max-height: calc(100dvh - 24px);
+  overflow-y: auto;
+}
+
+.quantity-gallery {
+  display: flex;
+  height: clamp(200px, 34vh, 300px);
+  overflow-x: auto;
+  scroll-snap-type: x mandatory;
+  scrollbar-width: none;
+  -webkit-overflow-scrolling: touch;
+}
+.quantity-gallery::-webkit-scrollbar { display: none; }
+
+.quantity-slide {
+  flex: 0 0 100%;
+  height: 100%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  scroll-snap-align: center;
+  background: var(--white);
+}
+
+.quantity-slide .quantity-image {
+  width: 100%;
+  height: 100%;
+  flex: none;
+  padding: 10px;
+  border-radius: 0;
+  object-fit: contain;
+  background: var(--white);
+}
+
+.quantity-slide .quantity-image-placeholder {
+  width: 100%;
+  height: 100%;
+  flex: none;
+  border-radius: 0;
+}
+
+.quantity-slide-desc {
+  align-items: flex-start;
+  overflow-y: auto;
+  background: #f9fafb;
+}
+
+.quantity-description {
+  width: 100%;
+  padding: 16px 18px;
+  font-size: 13px;
+  line-height: 1.55;
+  color: var(--ink);
+  white-space: pre-line;
+  overflow-wrap: anywhere;
+}
+
+.quantity-dots {
+  display: flex;
+  justify-content: center;
+  gap: 8px;
+  padding: 8px 0 2px;
+}
+
+.q-dot {
+  width: 8px;
+  height: 8px;
+  padding: 0;
+  border: 0;
+  border-radius: 50%;
+  background: #cfd5df;
+  transition: width .2s, background .2s;
+}
+.q-dot.active {
+  width: 22px;
+  border-radius: 8px;
+  background: var(--green);
+}
+
+.quantity-info-block { padding: 6px 17px 12px; }
+
+/* Quantity label beside the stepper */
+.quantity-row {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 12px;
+}
+.quantity-row > label {
+  margin: 0;
+  font-size: 13px;
+  font-weight: 700;
+}
+.quantity-row .quantity-picker {
+  gap: 8px;
+  justify-content: flex-end;
+}
+.quantity-row .quantity-picker button {
+  width: 40px;
+  height: 40px;
+}
+.quantity-row .quantity-picker input {
+  width: 72px;
+  height: 40px;
+  font-size: 18px;
+}
