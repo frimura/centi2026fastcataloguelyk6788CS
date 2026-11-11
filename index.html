@@ -75,19 +75,33 @@
               aria-label="Close">×</button>
     </div>
 
-    <div class="quantity-product">
-      <img id="quantityImage" class="quantity-image hidden" alt="">
-      <div id="quantityImagePlaceholder"
-           class="quantity-image-placeholder">▧</div>
+       <div class="quantity-gallery-wrap">
+      <div id="quantityGallery" class="quantity-gallery">
+        <div class="quantity-slide">
+          <img id="quantityImage" class="quantity-image hidden" alt="">
+          <div id="quantityImagePlaceholder"
+               class="quantity-image-placeholder">▧</div>
+        </div>
 
-      <div class="quantity-product-info">
-        <strong id="quantityProductName"></strong>
-        <small id="quantityProductSku"></small>
-         <small id="quantityProductVariation"></small>
-        <div id="quantityProductPrice" class="product-price"></div>
+        <div class="quantity-slide quantity-slide-desc">
+          <div id="quantityDescription" class="quantity-description"></div>
+        </div>
+      </div>
+
+      <div class="quantity-dots">
+        <button type="button" class="q-dot active" data-slide="0"
+                aria-label="Photo"></button>
+        <button type="button" class="q-dot" data-slide="1"
+                aria-label="Description"></button>
       </div>
     </div>
 
+    <div class="quantity-product-info quantity-info-block">
+      <strong id="quantityProductName"></strong>
+      <small id="quantityProductSku"></small>
+      <div id="quantityProductPrice" class="product-price"></div>
+    </div>
+ <div class="quantity-row">
     <div class="quantity-body">
       <label for="productQuantity">Quantity</label>
 
@@ -100,7 +114,7 @@
        autocomplete="off">
         <button id="quantityPlus" type="button">＋</button>
       </div>
-
+   </div>
       <div class="quantity-subtotal">
         <span>Subtotal</span>
         <strong id="quantitySubtotal">Rp0</strong>
