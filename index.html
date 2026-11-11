@@ -101,27 +101,24 @@
       <small id="quantityProductSku"></small>
       <div id="quantityProductPrice" class="product-price"></div>
     </div>
- <div class="quantity-row">
-    <div class="quantity-body">
-      <label for="productQuantity">Quantity</label>
+     <div class="quantity-body">
+      <div class="quantity-row">
+        <label for="productQuantity">Quantity</label>
 
-      <div class="quantity-picker">
-        <button id="quantityMinus" type="button">−</button>
-       <input id="productQuantity" type="text"
-       value="1"
-       inputmode="numeric"
-       pattern="[0-9]*"
-       autocomplete="off">
-        <button id="quantityPlus" type="button">＋</button>
+        <div class="quantity-picker">
+          <button id="quantityMinus" type="button">−</button>
+          <input id="productQuantity" type="text"
+                 value="1"
+                 inputmode="numeric"
+                 pattern="[0-9]*"
+                 autocomplete="off">
+          <button id="quantityPlus" type="button">＋</button>
+        </div>
       </div>
-   </div>
-      <div class="quantity-subtotal">
-        <span>Subtotal</span>
+
+      <button id="confirmAddToCart" class="primary-button quantity-add">
+        <span class="quantity-add-label">Add to Cart</span>
         <strong id="quantitySubtotal">Rp0</strong>
-      </div>
-
-      <button id="confirmAddToCart" class="primary-button">
-        Add to Cart
       </button>
     </div>
   </section>
