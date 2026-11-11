@@ -232,9 +232,8 @@ function applyLanguage() {
     t('selectQuantity');
 
   $('quantityPanel').querySelector('label').textContent = t('quantity');
-  $('quantityPanel').querySelector('.quantity-subtotal span').textContent =
-    t('subtotal');
-
+  const addLabel = document.querySelector('#confirmAddToCart .quantity-add-label');
+  if (addLabel) addLabel.textContent = t('addToCart');
   $('navCatalog').lastChild.textContent = t('catalog');
    const importNav = $('navImport');
 if (importNav) {
@@ -639,14 +638,7 @@ async function loadCatalog(options = {}) {
     }
 
     try {
-      let rows;
-
-      try {
-        rows = await fetchCatalogFromGoogleSheets();
-      } catch (sheetsError) {
-        console.warn('Google Sheets request failed:', sheetsError);
-        rows = await fetchCatalogFromAppsScript();
-      }
+      const rows = await fetchCatalogFromGoogleSheets();
 
       products = rows;
       writeStorage(CONFIG.cacheKey, products);
@@ -2598,7 +2590,6 @@ initializeApp();
 
       const overlay = document.createElement('div');
       overlay.style.cssText =
-              overlay.style.cssText =
         'position:fixed;inset:0;z-index:999998;display:flex;' +
         'align-items:flex-start;justify-content:center;' +
         'padding:max(12px,env(safe-area-inset-top)) 14px 14px;' +
