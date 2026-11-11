@@ -235,8 +235,6 @@ function applyLanguage() {
   $('quantityPanel').querySelector('.quantity-subtotal span').textContent =
     t('subtotal');
 
-  $('confirmAddToCart').textContent = t('addToCart');
-
   $('navCatalog').lastChild.textContent = t('catalog');
    const importNav = $('navImport');
 if (importNav) {
