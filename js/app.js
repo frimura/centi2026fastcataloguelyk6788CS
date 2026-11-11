@@ -492,7 +492,8 @@ function normalize(rows) {
     price: indexOf('regular price'),
     name: indexOf('name'),
     variation: indexOf('variation'),
-    category: indexOf('code categorizing')
+        category: indexOf('code categorizing'),
+    description: indexOf('web description')
   };
 
   if (columns.sku < 0 || columns.price < 0) {
@@ -510,6 +511,7 @@ function normalize(rows) {
       ) || 0,
       name: String(row[columns.name] || '').trim(),
       variation: String(row[columns.variation] || '').trim(),
+      description: String(row[columns.description] || '').trim().slice(0, 1500),
       category: String(
         columns.category >= 0 ? row[columns.category] || '' : ''
       ).trim()
@@ -873,7 +875,17 @@ host.querySelectorAll('[data-stock-for]').forEach(slot => {
 /* =========================================================
    11. PRODUCT QUANTITY SELECTOR
    ========================================================= */
+function descriptionToText(html) {
+  const source = String(html || '')
+    .replace(/<br\s*\/?>/gi, '\n')
+    .replace(/<\/(p|div|li|h\d)>/gi, '\n');
 
+  const doc = new DOMParser().parseFromString(source, 'text/html');
+
+  return (doc.body.textContent || '')
+    .replace(/\n{3,}/g, '\n\n')
+    .trim();
+}
 function openQuantitySelector(sku) {
   const product = products.find(item => item.sku === sku);
   if (!product) return;
@@ -885,9 +897,12 @@ function openQuantitySelector(sku) {
     product.short || product.name || product.sku;
 
   $('quantityProductSku').textContent = `${t('sku')}: ${product.sku}`;
-     $('quantityProductVariation').textContent =
-    product.variation || product.notes || '';
   $('quantityProductPrice').textContent = money(product.price);
+     $('quantityDescription').textContent =
+    descriptionToText(product.description) ||
+    (currentLanguage === 'id'
+      ? 'Belum ada deskripsi untuk produk ini.'
+      : 'No description for this product yet.');
    let modalStock = $('quantityModalStock');
 
 if (!modalStock) {
@@ -934,6 +949,7 @@ fetchAndDisplayProductStock(sku);
 
   $('quantityOverlay').classList.remove('hidden');
   $('quantityPanel').classList.remove('hidden');
+     $('quantityGallery').scrollLeft = 0;
 }
 
 function closeQuantitySelector() {
@@ -3104,4 +3120,24 @@ initializeApp();
 
   const cartBtn = $('printNotaCart');
   if (cartBtn) cartBtn.addEventListener('click', printCartNota);
+})();
+(function initQuantityGallery() {
+  const gallery = $('quantityGallery');
+  if (!gallery) return;
+
+  const dots = [...document.querySelectorAll('.q-dot')];
+
+  const sync = () => {
+    const i = Math.round(gallery.scrollLeft / Math.max(1, gallery.clientWidth));
+    dots.forEach((dot, n) => dot.classList.toggle('active', n === i));
+  };
+
+  gallery.addEventListener('scroll', sync, { passive: true });
+
+  dots.forEach(dot => dot.addEventListener('click', () => {
+    gallery.scrollTo({
+      left: Number(dot.dataset.slide) * gallery.clientWidth,
+      behavior: 'smooth'
+    });
+  }));
 })();
