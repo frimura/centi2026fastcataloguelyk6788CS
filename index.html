@@ -298,35 +298,40 @@
  <!-- CONNECTION SETTINGS -->
 <div id="settingsOverlay" class="overlay hidden"></div>
 
-<aside id="settingsPanel" class="cart-panel hidden" aria-label="Connection settings">
-  <div class="panel-head">
-    <strong>Connection settings</strong>
-    <button id="closeSettings" class="icon-button" type="button">×</button>
+<aside id="settingsPanel" class="pin-panel hidden" aria-label="Order PIN">
+  <div class="pin-head">
+    <div class="pin-icon">
+      <svg viewBox="0 0 24 24" width="22" height="22" fill="none"
+           stroke="currentColor" stroke-width="2"
+           stroke-linecap="round" stroke-linejoin="round">
+        <rect x="4" y="11" width="16" height="10" rx="2"/>
+        <path d="M8 11V7a4 4 0 0 1 8 0v4"/>
+      </svg>
+    </div>
+    <div class="pin-titles">
+      <strong>Order PIN</strong>
+      <small>Required to send orders to Telegram</small>
+    </div>
+    <button id="closeSettings" class="icon-button" type="button"
+            aria-label="Close">×</button>
   </div>
 
-  <div class="cart-items">
-    <label>
-      Apps Script Web App URL
-      <input
-        id="scriptUrl"
-        type="url"
-        placeholder="https://script.google.com/macros/s/..."
-      >
-    </label>
+  <div class="pin-body">
+    <label id="orderPinLabel" for="orderPin">Order access PIN</label>
 
-    <!-- PUT THE PIN SETTING HERE -->
-    <label>
-      Order access PIN
-      <input
-        id="orderPin"
-        type="password"
-        placeholder="Enter PIN"
-      >
-    </label>
+    <div class="pin-field">
+      <input id="orderPin" type="password" placeholder="Enter PIN"
+             autocomplete="off" inputmode="text"
+             onkeydown="if(event.key==='Enter')document.getElementById('saveSettings').click()">
+      <button type="button" class="pin-toggle"
+              onclick="const i=document.getElementById('orderPin');i.type=i.type==='password'?'text':'password';this.textContent=i.type==='password'?'Show':'Hide'">Show</button>
+    </div>
 
-    <button id="saveSettings" class="primary-button" type="button">
-      Save settings
+    <button id="saveSettings" class="primary-button pin-save" type="button">
+      Save PIN
     </button>
+
+    <p class="pin-note">The PIN is stored only on this device.</p>
   </div>
 </aside>
   <!-- IMPORT ORDER -->
