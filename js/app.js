@@ -2332,10 +2332,6 @@ if (settingsOverlay) {
     showToast(t('settingsSaved'));
   };
 
-    writeStorage(CONFIG.settingsKey, settings);
-    closeSettings();
-    showToast(t('settingsSaved'));
-  };
 }
 
 /* =========================================================
