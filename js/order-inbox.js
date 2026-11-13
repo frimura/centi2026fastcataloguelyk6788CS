@@ -281,7 +281,7 @@
 
 
     updateLabels();
-
+    renderCart();
 
     $('sendToSalesman').addEventListener('click', openRecipientPopup);
 
@@ -346,7 +346,13 @@ function openRecipientPopup() {
     return;
   }
 
+  if (!$('customerType').value) {
+    showToast(t('selectCustomerFirst'));
+    return;
+  }
+
   const cancelLabel = currentLanguage === 'id' ? 'Batal' : 'Cancel';
+  let selectedRecipient = '';
 
   const overlay = document.createElement('div');
   overlay.id = 'salesmanRecipientOverlay';
@@ -356,23 +362,26 @@ function openRecipientPopup() {
     <section class="salesman-recipient-dialog"
              role="dialog" aria-modal="true">
       <h2>${esc(words().send)}</h2>
-      <label for="salesmanRecipientSelect">
-        ${esc(words().choose)}
-      </label>
+      <p class="salesman-recipient-prompt">${esc(words().choose)}</p>
 
-      <select id="salesmanRecipientSelect">
-        <option value="">${esc(words().choose)}</option>
+      <div class="salesman-recipient-options">
         ${REQUESTER_NAMES.map(name => `
-          <option value="${esc(name)}">${esc(name)}</option>
+          <button
+            type="button"
+            class="salesman-recipient-option"
+            data-recipient="${esc(name)}"
+            aria-pressed="false">
+            ${esc(name)}
+          </button>
         `).join('')}
-      </select>
+      </div>
 
       <div class="salesman-recipient-actions">
         <button id="cancelSalesmanPopup" type="button">
           ${esc(cancelLabel)}
         </button>
         <button id="confirmSalesmanPopup"
-                class="primary-button" type="button">
+                class="primary-button" type="button" disabled>
           ${esc(words().send)}
         </button>
       </div>
@@ -389,16 +398,28 @@ function openRecipientPopup() {
     if (event.target === overlay) closePopup();
   });
 
-  $('confirmSalesmanPopup').onclick = async () => {
-    const recipientName = $('salesmanRecipientSelect').value;
+  overlay.querySelectorAll('[data-recipient]').forEach(button => {
+    button.addEventListener('click', () => {
+      selectedRecipient = button.dataset.recipient;
 
-    if (!recipientName) {
+      overlay.querySelectorAll('[data-recipient]').forEach(option => {
+        const selected = option === button;
+        option.classList.toggle('is-selected', selected);
+        option.setAttribute('aria-pressed', String(selected));
+      });
+
+      $('confirmSalesmanPopup').disabled = false;
+    });
+  });
+
+  $('confirmSalesmanPopup').onclick = async () => {
+    if (!selectedRecipient) {
       showToast(words().choose);
       return;
     }
 
     closePopup();
-    await sendSharedOrder(recipientName);
+    await sendSharedOrder(selectedRecipient);
   };
 }
 

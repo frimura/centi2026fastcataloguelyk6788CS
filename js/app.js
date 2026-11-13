@@ -1423,12 +1423,12 @@ items.forEach(item => {
     items.reduce((sum, item) => sum + item.price * item.qty, 0)
   );
 
- $('sendOrder').disabled = !items.length;
+  const canUseCart = items.length > 0 && Boolean($('customerType').value);
 
-$('copyOrder').disabled = !items.length;
-$('emptyCart').disabled = !items.length;
-$('saveCartOrder').disabled = !items.length;
-if ($('printNotaCart')) $('printNotaCart').disabled = !items.length;
+  // Keep the close button usable so the customer can close the cart.
+  document.querySelectorAll('#cartPanel button:not(#closeCart)').forEach(button => {
+    button.disabled = !canUseCart;
+  });
    
   $('cartItems').querySelectorAll('[data-minus]').forEach(button => {
     button.onclick = () => changeQty(button.dataset.minus, -1);
@@ -2326,7 +2326,7 @@ if ($('confirmImportOrder')) {
 $('navCatalog').onclick = () => {
   window.scrollTo({ top: 0, behavior: 'smooth' });
 };
-
+  $('customerType').addEventListener('change', renderCart);
   $('closeCart').onclick = closeCart;
   $('cartOverlay').onclick = closeCart;
 

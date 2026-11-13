@@ -1942,20 +1942,33 @@ main {
   font-size: 18px;
 }
 
-.salesman-recipient-dialog label {
-  display: block;
-  margin-bottom: 8px;
+.salesman-recipient-prompt {
+  margin: 0 0 10px;
   font-weight: 700;
 }
 
-.salesman-recipient-dialog select {
-  width: 100%;
-  min-height: 46px;
-  padding: 8px 12px;
+.salesman-recipient-options {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 9px;
+  max-height: 50vh;
+  overflow-y: auto;
+}
+
+.salesman-recipient-option {
+  min-height: 44px;
+  padding: 10px;
   border: 1px solid var(--line);
   border-radius: 10px;
   background: var(--white);
   color: var(--ink);
+  cursor: pointer;
+}
+
+.salesman-recipient-option.is-selected {
+  border-color: var(--green);
+  background: var(--green);
+  color: var(--white);
 }
 
 .salesman-recipient-actions {
