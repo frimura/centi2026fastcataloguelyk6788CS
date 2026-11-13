@@ -286,7 +286,7 @@ main {
   left: 0;
   z-index: 6;
   display: grid;
-  grid-template-columns: repeat(4, minmax(0, 1fr));
+  grid-template-columns: repeat(5, minmax(0, 1fr));
   border-top: 1px solid var(--line);
   background: var(--white);
 }
@@ -1796,4 +1796,188 @@ main {
 .quantity-add strong {
   font-size: 16px;
   font-weight: 800;
+}
+.shared-recipient-field {
+  grid-column: 1 / -1;
+}
+
+.shared-send-row {
+  grid-template-columns: 1fr;
+}
+
+.shared-send-button {
+  width: 100%;
+  min-height: 48px;
+}
+
+.shared-inbox-section {
+  margin-top: 18px;
+  padding-top: 16px;
+  border-top: 1px solid var(--line);
+}
+
+.shared-inbox-heading {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 10px;
+  margin-bottom: 12px;
+}
+
+.shared-inbox-heading strong,
+.shared-inbox-heading small {
+  display: block;
+}
+
+.shared-inbox-heading small {
+  margin-top: 3px;
+  color: var(--muted);
+  font-size: 12px;
+}
+
+#refreshSharedInbox {
+  flex: 0 0 auto;
+  padding: 8px 10px;
+  border: 1px solid var(--line);
+  border-radius: 8px;
+  background: var(--white);
+  color: var(--ink);
+}
+
+.shared-inbox-empty {
+  padding: 12px;
+  color: var(--muted);
+  text-align: center;
+}
+
+.shared-order-card {
+  margin: 10px 0;
+  padding: 13px;
+  border: 1px solid var(--line);
+  border-radius: 12px;
+  background: var(--white);
+}
+
+.shared-order-top,
+.shared-order-total {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 10px;
+}
+
+.shared-order-top small,
+.shared-order-card p,
+.shared-order-items small {
+  color: var(--muted);
+}
+
+.shared-order-card p {
+  margin: 7px 0;
+  font-size: 12px;
+}
+
+.shared-order-items {
+  margin: 10px 0;
+  padding-left: 20px;
+}
+
+.shared-order-items li {
+  margin: 7px 0;
+}
+
+.shared-order-items small {
+  display: block;
+}
+
+.shared-order-actions {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 8px;
+  margin-top: 12px;
+}
+
+.shared-order-actions button {
+  min-height: 40px;
+  padding: 8px;
+  border: 1px solid var(--line);
+  border-radius: 8px;
+  background: var(--white);
+  color: var(--ink);
+  font-weight: 700;
+}
+
+.shared-order-actions button:first-child {
+  border-color: var(--green);
+  background: var(--green);
+  color: var(--white);
+}
+
+@media (max-width: 380px) {
+  .bottom-nav button .nav-label {
+    font-size: 10px;
+  }
+}
+.salesman-recipient-overlay {
+  position: fixed;
+  inset: 0;
+  z-index: 1000;
+  display: grid;
+  place-items: center;
+  padding: 20px;
+  background: rgba(0, 0, 0, .58);
+}
+
+.salesman-recipient-dialog {
+  width: min(420px, 100%);
+  padding: 20px;
+  border-radius: 16px;
+  background: var(--white);
+  color: var(--ink);
+  box-shadow: 0 16px 48px rgba(20, 31, 52, .25);
+}
+
+.salesman-recipient-dialog h2 {
+  margin: 0 0 16px;
+  font-size: 18px;
+}
+
+.salesman-recipient-dialog label {
+  display: block;
+  margin-bottom: 8px;
+  font-weight: 700;
+}
+
+.salesman-recipient-dialog select {
+  width: 100%;
+  min-height: 46px;
+  padding: 8px 12px;
+  border: 1px solid var(--line);
+  border-radius: 10px;
+  background: var(--white);
+  color: var(--ink);
+}
+
+.salesman-recipient-actions {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 10px;
+  margin-top: 18px;
+}
+
+.salesman-recipient-actions button {
+  min-height: 44px;
+  border: 1px solid var(--line);
+  border-radius: 10px;
+}
+.order-prompt-text {
+  margin: 0 0 10px;
+  font-size: 16px;
+  line-height: 1.45;
+}
+
+.order-prompt-summary {
+  margin: 0 0 4px;
+  color: var(--muted);
+  font-size: 12px;
 }

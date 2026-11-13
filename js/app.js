@@ -255,6 +255,11 @@ setButtonLabel('emptyCart', t('emptyCart'));
     const pinLabel = $('orderPinLabel');
   if (pinLabel) pinLabel.textContent = t('orderPIN');
 
+   const inboxPinLabel = $('inboxPinLabel');
+if (inboxPinLabel) {
+  inboxPinLabel.textContent =
+    currentLanguage === 'id' ? 'PIN kotak masuk bersama' : 'Shared inbox PIN';
+}
   updateRequesterBadge();
   renderProducts();
   renderCart();
@@ -329,6 +334,13 @@ const REQUESTER_NAMES = [
   'Ye', 'Amin', 'Lukman', 'Resti', 'Bangkit', 'Arif',
   'Raga', 'Rauf', 'Budi', 'Frisky', 'Yudi', 'Serli'
 ];
+
+// Fixed codes: never renumber. A new salesman gets the next free code.
+const SALESMAN_CODES = {
+  Ye: '01', Amin: '02', Lukman: '03', Resti: '04',
+  Bangkit: '05', Arif: '06', Raga: '07', Rauf: '08',
+  Budi: '09', Frisky: '10', Yudi: '11', Serli: '12'
+};
 
 function showRequesterPrompt() {
   let overlay = $('requesterIdentityOverlay');
@@ -1280,7 +1292,8 @@ function newOrderNo() {
   const d = new Date();
   const p = n => String(n).padStart(2, '0');
   return d.getFullYear() + p(d.getMonth() + 1) + p(d.getDate()) +
-         p(d.getHours()) + p(d.getMinutes()) + p(d.getSeconds());
+         p(d.getHours()) + p(d.getMinutes()) + p(d.getSeconds()) +
+         (SALESMAN_CODES[requesterName] || '00');
 }
 
 function getCartNo() {
@@ -2076,6 +2089,8 @@ function openSettings() {
 
   $('orderPin').value = settings.pin || '';
   $('orderPin').type = 'password';
+   $('inboxPin').value = settings.inboxPin || '';
+$('inboxPin').type = 'password';
 
   if (!window.matchMedia('(pointer: coarse)').matches) {
     $('orderPin').focus();
@@ -2125,6 +2140,12 @@ window.addEventListener('popstate', () => {
   // Our own history.back() calls: ignore once
   if (window.__skipPop) {
     window.__skipPop = false;
+    return;
+  }
+
+   // 0) Incoming-order popup sits on top of everything
+  if (window.closeOrderPrompt) {
+    window.closeOrderPrompt();
     return;
   }
 
@@ -2331,8 +2352,11 @@ if (settingsOverlay) {
 }
 
     $('saveSettings').onclick = () => {
-    settings = { pin: $('orderPin').value.trim() };
-
+    settings = {
+  ...settings,
+  pin: $('orderPin').value.trim(),
+  inboxPin: $('inboxPin').value.trim()
+};
     writeStorage(CONFIG.settingsKey, settings);
     closeSettings();
     showToast(t('settingsSaved'));

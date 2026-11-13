@@ -1,7 +1,7 @@
 
 {
   "name": "Centi Store Catalogue",
-  "short_name": "Centi Catalogue INTERNAL",
+  "short_name": "Centi INT DEV",
   "description": "Centi product price lookup and order builder",
 
   "start_url": "./",

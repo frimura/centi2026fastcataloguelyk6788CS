@@ -1,11 +1,12 @@
 
-const CACHE = 'centi-catalog-shell-v21';
+const CACHE = 'centi-catalog-shell-v24';
 
 const FILES = [
   './',
   './index.html',
   './css/style.css',
   './js/app.js',
+  './js/order-inbox.js',
   './js/search.js',
   './search-rules.json',
   './manifest.json',
