@@ -60,7 +60,12 @@
     ],
     "wire": [
       "braided",
-      "sleeve"
+      "sleeve",
+      "mesh",
+      "wiremesh",
+      "pelindung kabel",
+      "kabel"
+      
     ],
     "elemen": [
       "heater"
@@ -11107,7 +11112,8 @@
         "sleeve",
         "braid",
         "braided",
-        "mesh"
+        "mesh",
+        "wire mesh"
       ],
       "series": {},
       "variant1": [],
